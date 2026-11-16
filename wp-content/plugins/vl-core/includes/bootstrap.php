@@ -206,6 +206,9 @@ function vl_run_auto_setup( $force = false ) {
 
 	$result['user_id'] = vl_ensure_owner_user();
 	vl_cleanup_placeholder_ads();
+	if ( function_exists( 'vl_ensure_product_ad_card' ) ) {
+		vl_ensure_product_ad_card();
+	}
 
 	if ( ! $force && get_option( 'vl_auto_setup_done' ) ) {
 		$result['skipped'] = true;
