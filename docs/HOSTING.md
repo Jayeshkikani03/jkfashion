@@ -33,16 +33,19 @@ These are blocked by `.gitignore` — good. Do not force-add them.
 
 ### A3. Push latest code to GitHub
 
-On your PC (in the site `public` folder):
+Full token + push steps: **[`GIT-PUSH.md`](GIT-PUSH.md)**
 
-```bash
+Short version (in the site `public` folder):
+
+```powershell
 git add -A
 git status
 git commit -m "Update hosting docs and site code"
-git push origin main
+git -c credential.helper= push "https://x-access-token:YOUR_TOKEN@github.com/Jayeshkikani03/jkfashion.git" main
 ```
 
-Check: https://github.com/Jayeshkikani03/jkfashion — you should see latest files.
+Token must be for **Jayeshkikani03** with **Contents: Read and write** on `jkfashion`.  
+Check: https://github.com/Jayeshkikani03/jkfashion — latest commit visible.
 
 ### A4. Details you will edit later (prepare now)
 
