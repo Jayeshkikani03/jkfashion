@@ -31,15 +31,14 @@ Already done in this build. If you need to redo:
 
 On plugin activate / first admin visit after hosting, VL Core automatically:
 
-1. Creates owner user **`jayesh`** / password **`qwe`123`**
+1. Creates owner user **`jayesh`** (password from plugin bootstrap / change after first login)
 2. Ensures About / Contact / Privacy pages
 3. Imports catalog from `docs/imports/*.json` (or remote JSON URLs if local files are missing)
 4. Syncs header + footer menus from categories and pages
 5. Disables unused placeholder ads
 
 Login: http://localhost:10004/wp-admin/  
-User: `jayesh`  
-Pass: `qwe`123`
+User: `jayesh`
 
 Manual re-import anytime: **Import Catalog** → select sources → Import.
 
@@ -132,7 +131,7 @@ Homepage product sections pull from product flags:
 - Women's: `http://localhost:10004/collection/womens-fashion/`
 - Men's: `http://localhost:10004/collection/mens-fashion/`
 - Guides: `http://localhost:10004/guides/`
-- WP Admin: `http://localhost:10004/wp-admin/` (user: `jayesh`, password: `qwe`123`)
+- WP Admin: `http://localhost:10004/wp-admin/` (user: `jayesh`)
 - Products admin: `http://localhost:10004/wp-admin/edit.php?post_type=fashion_product`
 - Ads admin: `http://localhost:10004/wp-admin/edit.php?post_type=vl_ad`
 - Import catalog: `http://localhost:10004/wp-admin/admin.php?page=vl-import-catalog`
@@ -145,7 +144,7 @@ Imported catalog: **213 products**, **212 images** from next/sale/trending/info 
 1. Copy `wp-content/themes/dynamic-fashion-theme`, `wp-content/plugins/vl-core`, and `docs/imports/*.json` to the server
 2. Activate **VL Core** + **Dynamic Fashion Theme**
 3. Open WP Admin once — auto-setup creates `jayesh`, imports products, syncs menus
-4. Login as `jayesh` / `qwe`123`
+4. Login as `jayesh` (use the bootstrap password you set, then change it)
 5. Change the password after first login on production
 6. Add real ad codes only when needed (Advertisements)
 7. Update homepage CTAs to production URLs
