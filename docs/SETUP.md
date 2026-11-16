@@ -139,16 +139,20 @@ Homepage product sections pull from product flags:
 
 Imported catalog: **213 products**, **212 images** from next/sale/trending/info Vastralaxmi feeds.
 
-## 10. Deployment checklist
+## 10. Host this site (production)
 
-1. Copy `wp-content/themes/dynamic-fashion-theme`, `wp-content/plugins/vl-core`, and `docs/imports/*.json` to the server
-2. Activate **VL Core** + **Dynamic Fashion Theme**
-3. Open WP Admin once — auto-setup creates `jayesh`, imports products, syncs menus
-4. Login as `jayesh` (use the bootstrap password you set, then change it)
-5. Change the password after first login on production
-6. Add real ad codes only when needed (Advertisements)
-7. Update homepage CTAs to production URLs
-8. Test mobile menu + COD order flow
+Full step-by-step hosting guide (domain, database, GitHub deploy, SSL, import, checklist):
+
+→ **[`HOSTING.md`](HOSTING.md)**
+
+Short checklist:
+
+1. Upload / clone repo to host web root
+2. Create MySQL DB + `wp-config.php` (not in Git)
+3. Activate **VL Core** + **Dynamic Fashion Theme**
+4. Permalinks → Post name → Save
+5. First admin visit runs auto import + menus
+6. Login as `jayesh`, change password, test COD + mobile menu
 
 ## Database / content model
 
