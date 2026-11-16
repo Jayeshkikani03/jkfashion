@@ -1,0 +1,36 @@
+# Secrets / local env — never commit
+wp-config.php
+.env
+.env.*
+*.pem
+*credentials*
+
+# Local / debug
+local-xdebuginfo.php
+*.log
+debug.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# WordPress runtime / bulky media
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/backup*/
+wp-content/backups/
+wp-content/wflogs/
+wp-content/ai1wm-backups/
+
+# Dependencies / build
+node_modules/
+vendor/
+*.zip
+*.sql
+*.sql.gz
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.cursor/

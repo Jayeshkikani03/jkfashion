@@ -1,0 +1,101 @@
+{
+  "project": "Vastralaxmi Fashion Website",
+  "inspected_at": "2026-11-16",
+  "content_policy": "Reference metadata only. Do not republish third-party product text/images without ownership confirmation. Seed original starter content in WordPress admin.",
+  "local_baseline": {
+    "path": "C:/Users/sspl1386/Local Sites/dynamicblog/app/public",
+    "wordpress_version": "7.1.4",
+    "active_theme_before_build": "twentytwentyfive",
+    "plugins_before_build": []
+  },
+  "sources": [
+    {
+      "id": "main",
+      "url": "https://vastralaxmi.com",
+      "type": "homepage_storefront",
+      "design_notes": [
+        "Floating rounded header",
+        "Hero with Explore Collection / Our Story",
+        "Feature cards: Style Direction, Palette, Experience",
+        "Featured product/look cards with View Look",
+        "Top and sticky advertisement slots",
+        "Floating Unlock Discounts CTA"
+      ],
+      "nav": ["Home", "Categories", "FAQ", "About", "Contact", "Policies", "New arrivals"],
+      "palette_observed": ["midnight", "champagne", "ivory"]
+    },
+    {
+      "id": "next",
+      "url": "https://next.vastralaxmi.com/category/fashion_26",
+      "products_json": "https://next.vastralaxmi.com/products/products.json",
+      "categories": ["fashion_26", "Best_sellers"],
+      "product_count": 16,
+      "sample_products": [
+        {"id": 26, "title": "Blue & Black Brazil-Inspired Sports Jersey", "price": 39, "category": "fashion_26", "detail_url": "https://next.vastralaxmi.com/products/26/Blue-&-Black-Brazil-Inspired-Sports-Jersey"},
+        {"id": 27, "title": "Black Heart Detail Top", "price": 99, "category": "fashion_26", "detail_url": "https://next.vastralaxmi.com/products/27/Black-Heart-Detail-Top"},
+        {"id": 28, "title": "Black Casual Slide Sandals", "price": 139, "category": "fashion_26", "detail_url": "https://next.vastralaxmi.com/products/28/Black-Casual-Slide-Sandals"}
+      ],
+      "ads": ["header Advertisements label", "AdSense ca-pub-3798093153588183", "GPT slots JBM_vastralaxmi_*"],
+      "pagination": {"pages_observed": [1, 2, 3], "pattern": "/category/{slug}/{page}"}
+    },
+    {
+      "id": "sale",
+      "url": "https://sale.vastralaxmi.com/category/Luxury_Cloth/2",
+      "products_json": "https://sale.vastralaxmi.com/products/products.json",
+      "categories": ["Luxury_Cloth", "Best_cloth", "cloth_were"],
+      "product_count": 23,
+      "notes": "Sale-oriented copy, New arrivals CTA, premium occasionwear positioning"
+    },
+    {
+      "id": "trending",
+      "url": "https://trending.vastralaxmi.com/category/Best_Slides",
+      "products_json": "https://trending.vastralaxmi.com/products/products.json",
+      "categories": [
+        "Best_Choice", "Best_Collection", "Best_Jewelry", "Best_One", "Best_Slides", "Best_Toys", "Best_Wear",
+        "Casual_Slides", "Casual_Style", "Clothing_Fashion", "dress", "Dress_Collection", "Fashion_Boutique_hub",
+        "Fashion_Collection", "Fashion_Style", "Fashion_World", "Jewelry_Accessories", "Jewelry_Collection",
+        "Kids_Choice", "Navrati_special_offer", "New_Arrival", "New_Collection", "Shoes", "Shoes_Slides",
+        "Slides_Choice", "Slides_Collection", "Slides_One", "Slippers_Collection", "Trend_Choice",
+        "Trend_Collection", "Trend_Fashion", "Trending_Collection", "Trending_Hub"
+      ],
+      "product_count": 130
+    },
+    {
+      "id": "info",
+      "url": "https://www.info.vastralaxmi.com/category/Trending_Fashion/6",
+      "products_json": "https://www.info.vastralaxmi.com/products/products.json",
+      "categories": ["Trending_Fashion", "Festival_Fashion"],
+      "product_count": 44
+    }
+  ],
+  "product_schema_observed": {
+    "fields": ["id", "title", "description", "price", "category", "img1", "img2", "img3", "img4", "img5", "img6", "img7", "img8", "img9", "img10"],
+    "currency": "INR",
+    "detail_route": "/products/{id}/{slug}"
+  },
+  "unified_category_map": {
+    "New Arrivals": ["Best_sellers", "New_Arrival", "New_Collection"],
+    "Fashion": ["fashion_26", "Clothing_Fashion", "Fashion_Collection", "Fashion_Style", "Fashion_World", "dress", "Dress_Collection"],
+    "Luxury Collection": ["Luxury_Cloth", "Best_cloth", "Best_Collection", "Best_One"],
+    "Sale and Offers": ["cloth_were", "Navrati_special_offer"],
+    "Trending Fashion": ["Trending_Fashion", "Trend_Fashion", "Trend_Collection", "Trend_Choice", "Trending_Collection", "Trending_Hub", "Casual_Style"],
+    "Best Slides": ["Best_Slides", "Casual_Slides", "Shoes", "Shoes_Slides", "Slides_Choice", "Slides_Collection", "Slides_One", "Slippers_Collection"],
+    "Women's Fashion": ["Best_Wear", "Fashion_Boutique_hub"],
+    "Men's Fashion": [],
+    "Festival Fashion": ["Festival_Fashion", "Navrati_special_offer"],
+    "Jewelry and Accessories": ["Best_Jewelry", "Jewelry_Accessories", "Jewelry_Collection"],
+    "Fashion Guides": []
+  },
+  "ad_slots_planned": [
+    "header_top",
+    "below_nav",
+    "below_hero",
+    "before_category",
+    "between_products",
+    "between_paragraphs",
+    "sidebar",
+    "before_related",
+    "before_footer",
+    "footer"
+  ]
+}
