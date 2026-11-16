@@ -322,8 +322,23 @@ function vl_sync_site_menus() {
 		);
 	}
 
-	// Footer: pages marked for footer (About/Contact/Privacy by default).
-	$fpos         = 1;
+	// Footer: Guides archive + pages marked for footer (About/Contact/Privacy by default).
+	$fpos = 1;
+	$guides_url = get_post_type_archive_link( 'fashion_article' );
+	if ( $guides_url ) {
+		wp_update_nav_menu_item(
+			$footer_id,
+			0,
+			array(
+				'menu-item-title'    => __( 'Blogs / Guides', 'vl-core' ),
+				'menu-item-url'      => $guides_url,
+				'menu-item-status'   => 'publish',
+				'menu-item-type'     => 'custom',
+				'menu-item-position' => $fpos++,
+			)
+		);
+	}
+
 	$footer_pages = vl_get_menu_pages( 'footer' );
 
 	// Fallback if none flagged yet.

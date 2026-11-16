@@ -115,6 +115,7 @@ function vl_limit_menus_for_shop_users() {
 	);
 
 	if ( ! $staff ) {
+		$allowed[] = 'edit.php?post_type=fashion_article'; // Blogs / Guides.
 		$allowed[] = 'edit.php?post_type=vl_ad';
 		$allowed[] = 'edit.php?post_type=page';
 	}

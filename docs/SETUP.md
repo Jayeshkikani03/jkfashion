@@ -75,12 +75,19 @@ Pages:
 
 Category bar + top menu load **all product categories dynamically** (not static).
 
-## 5. Add a fashion guide
+## 5. Add a blog / fashion guide
 
-1. WP Admin → **Fashion Guides → Add New**
-2. Write the editorial content
-3. Add a featured image
-4. Publish
+Guides are live on the site (Home + `/guides/`). Admin panel:
+
+1. WP Admin → **Blogs / Guides → Add New**  
+   Or: http://localhost:10004/wp-admin/post-new.php?post_type=fashion_article
+2. Title + write content
+3. Set **Featured image**
+4. Optional: choose **Guide Topics**
+5. Publish
+
+List all: http://localhost:10004/wp-admin/edit.php?post_type=fashion_article  
+Public page: http://localhost:10004/guides/
 
 ## 6. Add advertisements (slot tags)
 

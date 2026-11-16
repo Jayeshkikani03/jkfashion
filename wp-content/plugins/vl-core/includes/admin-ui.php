@@ -64,9 +64,8 @@ add_action( 'admin_enqueue_scripts', 'vl_admin_enqueue' );
  * Hide unused admin menus for a clean shop panel.
  */
 function vl_simplify_admin_menu() {
-	remove_menu_page( 'edit.php' );                   // Posts
+	remove_menu_page( 'edit.php' );                   // Posts (default blog posts — we use Fashion Guides instead)
 	remove_menu_page( 'edit-comments.php' );          // Comments
-	remove_menu_page( 'edit.php?post_type=fashion_article' ); // Fashion Guides
 	remove_submenu_page( 'index.php', 'update-core.php' );
 
 	// Extra WP promo / learning menus.
@@ -107,6 +106,7 @@ function vl_admin_menu_order( $menu_order ) {
 	return array(
 		'index.php',
 		'edit.php?post_type=fashion_product',
+		'edit.php?post_type=fashion_article', // Blogs / Guides.
 		'edit.php?post_type=vl_order',
 		'edit.php?post_type=vl_ad',
 		'upload.php',
@@ -185,6 +185,17 @@ function vl_admin_bar_logo_to_dashboard( $wp_admin_bar ) {
 	);
 	$user  = wp_get_current_user();
 	$staff = in_array( 'vl_shop_staff', (array) $user->roles, true );
+
+	if ( ! $staff && current_user_can( 'publish_posts' ) ) {
+		$wp_admin_bar->add_node(
+			array(
+				'parent' => 'new-content',
+				'id'     => 'vl-new-guide',
+				'title'  => __( 'Blog / Guide', 'vl-core' ),
+				'href'   => admin_url( 'post-new.php?post_type=fashion_article' ),
+			)
+		);
+	}
 
 	if ( ! $staff && current_user_can( 'publish_posts' ) ) {
 		$wp_admin_bar->add_node(
@@ -433,6 +444,7 @@ function vl_count_posts_safe( $post_type ) {
  */
 function vl_render_stats_widget() {
 	$products = vl_count_posts_safe( 'fashion_product' );
+	$guides   = vl_count_posts_safe( 'fashion_article' );
 	$orders   = vl_count_posts_safe( 'vl_order' );
 	$ads      = vl_count_posts_safe( 'vl_ad' );
 	$cats     = (int) wp_count_terms(
@@ -449,6 +461,10 @@ function vl_render_stats_widget() {
 		<a class="vl-dash-stat" href="<?php echo esc_url( admin_url( 'edit.php?post_type=fashion_product' ) ); ?>">
 			<strong><?php echo esc_html( number_format_i18n( $products ) ); ?></strong>
 			<span><?php esc_html_e( 'Products', 'vl-core' ); ?></span>
+		</a>
+		<a class="vl-dash-stat" href="<?php echo esc_url( admin_url( 'edit.php?post_type=fashion_article' ) ); ?>">
+			<strong><?php echo esc_html( number_format_i18n( $guides ) ); ?></strong>
+			<span><?php esc_html_e( 'Blogs / Guides', 'vl-core' ); ?></span>
 		</a>
 		<a class="vl-dash-stat" href="<?php echo esc_url( admin_url( 'edit.php?post_type=vl_order' ) ); ?>">
 			<strong><?php echo esc_html( number_format_i18n( $orders ) ); ?></strong>
@@ -501,13 +517,18 @@ function vl_render_help_widget() {
 		</div>
 		<?php if ( ! $is_staff ) : ?>
 		<div class="vl-dash-card">
-			<strong>3. <?php esc_html_e( 'Add an ad', 'vl-core' ); ?></strong>
+			<strong>3. <?php esc_html_e( 'Add a blog / guide', 'vl-core' ); ?></strong>
+			<p><?php esc_html_e( 'Blogs / Guides → Add New → write title + content → set featured image → Publish. Shows on Home and /guides/.', 'vl-core' ); ?></p>
+			<a class="button" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=fashion_article' ) ); ?>"><?php esc_html_e( 'Add Blog / Guide', 'vl-core' ); ?></a>
+		</div>
+		<div class="vl-dash-card">
+			<strong>4. <?php esc_html_e( 'Add an ad', 'vl-core' ); ?></strong>
 			<p><?php esc_html_e( 'Advertisements → Add New → choose slot tag → paste HTML → Publish.', 'vl-core' ); ?></p>
 			<a class="button" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=vl_ad' ) ); ?>"><?php esc_html_e( 'Add Ad', 'vl-core' ); ?></a>
 		</div>
 		<?php endif; ?>
 		<div class="vl-dash-card">
-			<strong><?php echo $is_staff ? '3.' : '4.'; ?> <?php esc_html_e( 'View website', 'vl-core' ); ?></strong>
+			<strong><?php echo $is_staff ? '3.' : '5.'; ?> <?php esc_html_e( 'View website', 'vl-core' ); ?></strong>
 			<p><?php esc_html_e( 'Open the live shop to check products and mobile view.', 'vl-core' ); ?></p>
 			<a class="button" href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Open Site', 'vl-core' ); ?></a>
 		</div>
