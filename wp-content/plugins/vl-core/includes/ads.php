@@ -351,19 +351,84 @@ function vl_render_inline_ad_card( $ad ) {
 }
 
 /**
- * Default HTML for seeded product-grid ad cards.
+ * Banner-style HTML for seeded slot ads.
  *
- * @return array[] title => html
+ * @param string $label  Short label.
+ * @param string $title  Title.
+ * @param string $text   Supporting text.
+ * @param string $url    Link URL.
+ * @param string $cta    Button text.
+ * @param string $bg     CSS background.
+ * @param string $color  Text color.
+ * @return string
  */
-function vl_default_product_ad_cards() {
-	$sale_url = home_url( '/collection/sale-and-offers/' );
-	$new_url  = home_url( '/collection/new-arrivals/' );
+function vl_default_banner_html( $label, $title, $text, $url, $cta, $bg, $color = '#1a2230' ) {
+	return '<a href="' . esc_url( $url ) . '" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;width:100%;padding:1rem 1.25rem;text-decoration:none;background:' . esc_attr( $bg ) . ';color:' . esc_attr( $color ) . ';border-radius:14px;">'
+		. '<span style="display:block;min-width:0;">'
+		. '<span style="display:block;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;opacity:0.75;">' . esc_html( $label ) . '</span>'
+		. '<strong style="display:block;margin-top:0.35rem;font-size:1.15rem;line-height:1.25;font-family:Georgia,serif;">' . esc_html( $title ) . '</strong>'
+		. '<span style="display:block;margin-top:0.25rem;font-size:0.88rem;opacity:0.85;">' . esc_html( $text ) . '</span>'
+		. '</span>'
+		. '<span style="display:inline-block;padding:0.55rem 0.95rem;border-radius:999px;background:#1a2230;color:#fff;font-size:0.82rem;font-weight:700;white-space:nowrap;">' . esc_html( $cta ) . '</span>'
+		. '</a>';
+}
 
-	return array(
+/**
+ * Default ads for all main slots (auto-seeded).
+ *
+ * @return array
+ */
+function vl_default_slot_ads() {
+	$sale = home_url( '/collection/sale-and-offers/' );
+	$new  = home_url( '/collection/new-arrivals/' );
+	$home = home_url( '/' );
+
+	$cards = array(
+		array(
+			'title'    => 'Default: Header top',
+			'slot'     => 'header_top',
+			'priority' => 10,
+			'html'     => vl_default_banner_html( 'Sponsored', 'Festival looks, ready to ship', 'Browse curated edits with COD available', $sale, 'Shop now', 'linear-gradient(90deg,#f7f1e8,#efe0cb)' ),
+		),
+		array(
+			'title'    => 'Default: Below hero',
+			'slot'     => 'below_hero',
+			'priority' => 10,
+			'html'     => vl_default_banner_html( 'Sponsored', 'New season drops', 'Fresh arrivals updated regularly', $new, 'See new', 'linear-gradient(90deg,#1a2230,#2c3648)', '#fff' ),
+		),
+		array(
+			'title'    => 'Default: Before category',
+			'slot'     => 'before_category',
+			'priority' => 10,
+			'html'     => vl_default_banner_html( 'Sponsored', 'Explore this collection', 'Find your next look in curated categories', $home, 'Browse', 'linear-gradient(90deg,#f3efe6,#e7d7c0)' ),
+		),
+		array(
+			'title'    => 'Default: Sidebar',
+			'slot'     => 'sidebar',
+			'priority' => 10,
+			'html'     => '<a href="' . esc_url( $sale ) . '" style="display:block;padding:1.25rem;text-align:center;text-decoration:none;background:linear-gradient(165deg,#1a2230,#b24a1b);color:#fff;border-radius:14px;">'
+				. '<span style="display:block;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.8;font-weight:700;">Sponsored</span>'
+				. '<strong style="display:block;margin-top:0.6rem;font-size:1.2rem;font-family:Georgia,serif;">Sale picks</strong>'
+				. '<span style="display:block;margin-top:0.35rem;font-size:0.88rem;opacity:0.9;">Better prices, same polish</span>'
+				. '</a>',
+		),
+		array(
+			'title'    => 'Default: Before footer',
+			'slot'     => 'before_footer',
+			'priority' => 10,
+			'html'     => vl_default_banner_html( 'Sponsored', 'Still browsing?', 'Jump back into Sale & Offers', $sale, 'Shop sale', 'linear-gradient(90deg,#efe4d4,#f7f1e8)' ),
+		),
+		array(
+			'title'    => 'Default: Footer',
+			'slot'     => 'footer',
+			'priority' => 10,
+			'html'     => vl_default_banner_html( 'Sponsored', 'JK Fashion', 'Premium fashion discovery', $home, 'Home', 'linear-gradient(90deg,#1a2230,#2c3648)', '#fff' ),
+		),
 		array(
 			'title'    => 'Grid ad: Sale edit',
+			'slot'     => 'between_products',
 			'priority' => 5,
-			'html'     => '<a href="' . esc_url( $sale_url ) . '" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:260px;padding:1.25rem;text-decoration:none;background:linear-gradient(165deg,#1a2230 0%,#2c3648 55%,#b24a1b 140%);color:#fff;border-radius:inherit;">'
+			'html'     => '<a href="' . esc_url( $sale ) . '" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:260px;padding:1.25rem;text-decoration:none;background:linear-gradient(165deg,#1a2230 0%,#2c3648 55%,#b24a1b 140%);color:#fff;border-radius:inherit;">'
 				. '<span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;font-weight:700;">Sponsored</span>'
 				. '<strong style="display:block;margin-top:0.85rem;font-size:1.35rem;line-height:1.2;font-family:Georgia,serif;">Sale &amp; Offers</strong>'
 				. '<span style="display:block;margin-top:0.45rem;font-size:0.9rem;opacity:0.9;">Curated looks at better prices</span>'
@@ -372,8 +437,9 @@ function vl_default_product_ad_cards() {
 		),
 		array(
 			'title'    => 'Grid ad: New arrivals',
+			'slot'     => 'between_products',
 			'priority' => 6,
-			'html'     => '<a href="' . esc_url( $new_url ) . '" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:260px;padding:1.25rem;text-decoration:none;background:linear-gradient(165deg,#f7f1e8 0%,#e8d7c0 60%,#d36a2f 130%);color:#1a2230;border-radius:inherit;">'
+			'html'     => '<a href="' . esc_url( $new ) . '" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:260px;padding:1.25rem;text-decoration:none;background:linear-gradient(165deg,#f7f1e8 0%,#e8d7c0 60%,#d36a2f 130%);color:#1a2230;border-radius:inherit;">'
 				. '<span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.7;font-weight:700;">Sponsored</span>'
 				. '<strong style="display:block;margin-top:0.85rem;font-size:1.35rem;line-height:1.2;font-family:Georgia,serif;">New Arrivals</strong>'
 				. '<span style="display:block;margin-top:0.45rem;font-size:0.9rem;opacity:0.85;">Fresh drops for the season</span>'
@@ -381,24 +447,50 @@ function vl_default_product_ad_cards() {
 				. '</a>',
 		),
 	);
+
+	return $cards;
 }
 
 /**
- * Ensure default product-grid ad cards exist (auto seed — no manual menu needed).
+ * Backward-compatible alias.
+ *
+ * @return array
+ */
+function vl_default_product_ad_cards() {
+	$out = array();
+	foreach ( vl_default_slot_ads() as $card ) {
+		if ( 'between_products' === $card['slot'] ) {
+			$out[] = $card;
+		}
+	}
+	return $out;
+}
+
+/**
+ * Ensure default ads exist for all main slots (auto seed).
  */
 function vl_ensure_product_ad_card() {
-	$existing = vl_get_ads_for_slot( 'between_products' );
-	if ( ! empty( $existing ) ) {
-		update_option( 'vl_product_ad_card_seeded_v2', 1 );
-		return;
+	if ( get_option( 'vl_default_ads_seeded_v3' ) ) {
+		// Still fill any missing slot that has zero enabled ads.
+		$needed = false;
+		foreach ( array( 'header_top', 'below_hero', 'before_category', 'between_products', 'sidebar', 'before_footer', 'footer' ) as $slot ) {
+			if ( empty( vl_get_ads_for_slot( $slot ) ) ) {
+				$needed = true;
+				break;
+			}
+		}
+		if ( ! $needed ) {
+			return;
+		}
 	}
 
-	// Re-seed even if older flag was set but ads are missing/disabled.
-	if ( get_option( 'vl_product_ad_card_seeded_v2' ) && empty( $existing ) ) {
-		delete_option( 'vl_product_ad_card_seeded_v2' );
-	}
+	$created = 0;
+	foreach ( vl_default_slot_ads() as $card ) {
+		$existing = vl_get_ads_for_slot( $card['slot'] );
+		if ( ! empty( $existing ) ) {
+			continue;
+		}
 
-	foreach ( vl_default_product_ad_cards() as $card ) {
 		$ad_id = wp_insert_post(
 			array(
 				'post_title'  => $card['title'],
@@ -412,13 +504,15 @@ function vl_ensure_product_ad_card() {
 		}
 		update_post_meta( $ad_id, '_vl_ad_code', $card['html'] );
 		update_post_meta( $ad_id, '_vl_ad_enabled', '1' );
-		update_post_meta( $ad_id, '_vl_ad_slot', 'between_products' );
+		update_post_meta( $ad_id, '_vl_ad_slot', $card['slot'] );
 		update_post_meta( $ad_id, '_vl_ad_priority', (int) $card['priority'] );
 		update_post_meta( $ad_id, '_vl_ad_desktop', '1' );
 		update_post_meta( $ad_id, '_vl_ad_mobile', '1' );
 		update_post_meta( $ad_id, '_vl_ad_targets', array( 'all' ) );
+		$created++;
 	}
 
+	update_option( 'vl_default_ads_seeded_v3', 1 );
 	update_option( 'vl_product_ad_card_seeded_v2', 1 );
 	update_option( 'vl_product_ad_card_seeded', 1 );
 }

@@ -3,6 +3,7 @@ wp-config.php
 wp-config-infinityfree.php
 reset-jayesh-password.php
 activate-jk-fashion.php
+fix-grid-ads.php
 .env
 .env.*
 *.pem

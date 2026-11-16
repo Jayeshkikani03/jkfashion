@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'VL_CORE_VERSION', '1.6.2' );
+define( 'VL_CORE_VERSION', '1.6.3' );
 define( 'VL_CORE_FILE', __FILE__ );
 define( 'VL_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'VL_CORE_URL', plugin_dir_url( __FILE__ ) );

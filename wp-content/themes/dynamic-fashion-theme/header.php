@@ -33,6 +33,8 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 </div>
 <?php endif; ?>
 
+<?php dft_render_ad( 'header_top' ); ?>
+
 <header class="site-header">
 	<div class="vl-container vl-header-bar">
 		<div class="site-branding">
