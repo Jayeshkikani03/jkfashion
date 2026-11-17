@@ -5,6 +5,64 @@
   const closeBtn = document.querySelector(".vl-nav-close");
   const i18n = (typeof dftData !== "undefined" && dftData.i18n) || {};
 
+  // Sticky header: show when scrolling down, hide when scrolling up.
+  (function initStickyHeader() {
+    const header = document.getElementById("site-header");
+    const sentinel = document.querySelector(".vl-header-sentinel");
+    const spacer = document.querySelector(".vl-header-spacer");
+    if (!header || !sentinel || !spacer) return;
+
+    let lastY = window.scrollY || 0;
+    let ticking = false;
+
+    function measure() {
+      const h = Math.ceil(header.getBoundingClientRect().height);
+      document.documentElement.style.setProperty("--vl-header-h", h + "px");
+      return h;
+    }
+
+    function sync() {
+      ticking = false;
+      const y = window.scrollY || 0;
+      const pastTop = sentinel.getBoundingClientRect().top <= 0;
+      const goingDown = y > lastY + 2;
+      const goingUp = y < lastY - 2;
+
+      measure();
+
+      if (!pastTop || y < 8) {
+        // At page top — normal header, not pinned.
+        header.classList.remove("is-fixed", "is-hidden-up");
+        spacer.classList.remove("is-on");
+      } else {
+        header.classList.add("is-fixed");
+        spacer.classList.add("is-on");
+        if (goingDown) {
+          header.classList.remove("is-hidden-up"); // need header while scrolling down
+        } else if (goingUp) {
+          header.classList.add("is-hidden-up"); // remove header while scrolling up
+        }
+      }
+
+      lastY = y;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(sync);
+      }
+    }
+
+    measure();
+    sync();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", function () {
+      measure();
+      sync();
+    });
+  })();
+
   function setNav(open) {
     if (!nav || !toggle) return;
     nav.classList.toggle("is-open", open);

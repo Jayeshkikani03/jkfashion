@@ -34,7 +34,10 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 </div>
 <?php endif; ?>
 
-<header class="site-header">
+<?php dft_render_ad( 'header_top' ); ?>
+
+<div class="vl-header-sentinel" aria-hidden="true"></div>
+<header class="site-header" id="site-header">
 	<div class="vl-container vl-header-bar">
 		<div class="site-branding">
 			<?php if ( has_custom_logo() ) : ?>
@@ -80,8 +83,9 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 		</div>
 	</div>
 </header>
+<div class="vl-header-spacer" aria-hidden="true"></div>
 
-<!-- Mobile drawer outside header so position:fixed works (header uses backdrop-filter). -->
+<!-- Mobile drawer outside header so position:fixed works. -->
 <div class="vl-nav-overlay" hidden></div>
 <nav id="site-navigation" class="vl-nav vl-nav--mobile" aria-label="<?php esc_attr_e( 'Mobile', 'dynamic-fashion' ); ?>">
 	<div class="vl-nav__mobile-head">
@@ -101,9 +105,6 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 	?>
 </nav>
 
-<?php
-dft_render_ad( 'header_top' );
-dft_render_ad( 'below_nav' );
-?>
+<?php dft_render_ad( 'below_nav' ); ?>
 
 <main id="primary" class="site-main">

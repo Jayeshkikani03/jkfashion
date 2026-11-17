@@ -24,14 +24,12 @@ if ( function_exists( 'vl_product_has_flag' ) ) {
 	}
 }
 
-$time_label = human_time_diff( get_the_time( 'U', $post_id ), current_time( 'timestamp' ) );
 ?>
 <article <?php post_class( 'vl-product-card' ); ?>>
 	<a class="vl-product-card__media" href="<?php the_permalink(); ?>">
 		<?php if ( $badge ) : ?>
 			<span class="vl-badge"><?php echo esc_html( $badge ); ?></span>
 		<?php endif; ?>
-		<span class="vl-product-card__time"><?php echo esc_html( sprintf( __( '%s ago', 'dynamic-fashion' ), $time_label ) ); ?></span>
 		<?php if ( has_post_thumbnail() ) : ?>
 			<?php
 			the_post_thumbnail(

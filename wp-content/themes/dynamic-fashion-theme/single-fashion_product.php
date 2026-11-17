@@ -62,7 +62,6 @@ while ( have_posts() ) :
 			</div>
 
 			<div class="vl-product-summary">
-				<p class="vl-product-time"><?php echo esc_html( sprintf( __( 'Added %s ago', 'dynamic-fashion' ), human_time_diff( get_the_time( 'U' ), current_time( 'timestamp' ) ) ) ); ?></p>
 				<h1><?php echo esc_html( $title ); ?></h1>
 				<div class="vl-product-meta">
 					<?php
