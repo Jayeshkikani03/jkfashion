@@ -36,7 +36,6 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 
 <?php dft_render_ad( 'header_top' ); ?>
 
-<div class="vl-header-sentinel" aria-hidden="true"></div>
 <header class="site-header" id="site-header">
 	<div class="vl-container vl-header-bar">
 		<div class="site-branding">
@@ -83,7 +82,6 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 		</div>
 	</div>
 </header>
-<div class="vl-header-spacer" aria-hidden="true"></div>
 
 <!-- Mobile drawer outside header so position:fixed works. -->
 <div class="vl-nav-overlay" hidden></div>
