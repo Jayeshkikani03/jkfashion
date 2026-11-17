@@ -98,9 +98,11 @@ function vl_render_ad_metabox( $post ) {
 				<li><code>header_top</code> — <?php esc_html_e( 'very top of every page', 'vl-core' ); ?></li>
 				<li><code>below_hero</code> — <?php esc_html_e( 'homepage under banner', 'vl-core' ); ?></li>
 				<li><code>before_category</code> — <?php esc_html_e( 'above product list', 'vl-core' ); ?></li>
-				<li><code>between_products</code> — <?php esc_html_e( 'ad card inside product grid (same size as product)', 'vl-core' ); ?></li>
+				<li><code>between_products</code> — <?php esc_html_e( 'ad card inside product grid', 'vl-core' ); ?></li>
 				<li><code>sidebar</code> — <?php esc_html_e( 'category sidebar', 'vl-core' ); ?></li>
+				<li><code>before_related</code> — <?php esc_html_e( 'product page before related', 'vl-core' ); ?></li>
 				<li><code>before_footer</code> / <code>footer</code> — <?php esc_html_e( 'bottom of page', 'vl-core' ); ?></li>
+				<li><?php esc_html_e( 'Optional later:', 'vl-core' ); ?> <code>below_nav</code>, <code>between_paragraphs</code></li>
 			</ul>
 		</div>
 
@@ -260,6 +262,16 @@ function vl_get_ads_for_slot( $slot ) {
  * @param array  $args Optional args.
  */
 function vl_render_ad( $slot, $args = array() ) {
+	// Thanks: keep confirmation clean. Checkout: only bottom ads (not above the form).
+	if ( function_exists( 'is_page' ) ) {
+		if ( is_page( 'thanks' ) ) {
+			return;
+		}
+		if ( is_page( 'checkout' ) && ! in_array( $slot, array( 'before_footer', 'footer' ), true ) ) {
+			return;
+		}
+	}
+
 	$defaults = array(
 		'class' => '',
 	);
@@ -267,6 +279,25 @@ function vl_render_ad( $slot, $args = array() ) {
 	$ads      = vl_get_ads_for_slot( $slot );
 
 	if ( empty( $ads ) ) {
+		return;
+	}
+
+	$units = array();
+	foreach ( $ads as $ad ) {
+		$code = trim( (string) get_post_meta( $ad->ID, '_vl_ad_code', true ) );
+		if ( '' === $code ) {
+			continue;
+		}
+		$units[] = array(
+			'ad'      => $ad,
+			'code'    => $code,
+			'desktop' => get_post_meta( $ad->ID, '_vl_ad_desktop', true ),
+			'mobile'  => get_post_meta( $ad->ID, '_vl_ad_mobile', true ),
+		);
+	}
+
+	// Fast path: no empty Advertisement chrome when slot has nothing to show.
+	if ( empty( $units ) ) {
 		return;
 	}
 
@@ -278,25 +309,17 @@ function vl_render_ad( $slot, $args = array() ) {
 	echo '<aside class="' . esc_attr( implode( ' ', $classes ) ) . '" aria-label="' . esc_attr__( 'Advertisement', 'vl-core' ) . '">';
 	echo '<span class="vl-ad__label">' . esc_html__( 'Advertisement', 'vl-core' ) . '</span>';
 
-	foreach ( $ads as $ad ) {
-		$desktop = get_post_meta( $ad->ID, '_vl_ad_desktop', true );
-		$mobile  = get_post_meta( $ad->ID, '_vl_ad_mobile', true );
-		$code    = get_post_meta( $ad->ID, '_vl_ad_code', true );
-
-		if ( ! $code ) {
-			continue;
-		}
-
+	foreach ( $units as $unit ) {
 		$device_classes = array( 'vl-ad__unit' );
-		if ( '1' !== (string) $desktop ) {
+		if ( '1' !== (string) $unit['desktop'] ) {
 			$device_classes[] = 'vl-ad__unit--hide-desktop';
 		}
-		if ( '1' !== (string) $mobile ) {
+		if ( '1' !== (string) $unit['mobile'] ) {
 			$device_classes[] = 'vl-ad__unit--hide-mobile';
 		}
 
 		echo '<div class="' . esc_attr( implode( ' ', $device_classes ) ) . '">';
-		echo vl_sanitize_ad_html( $code ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized via capability-aware helper.
+		echo vl_sanitize_ad_html( $unit['code'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized via capability-aware helper.
 		echo '</div>';
 	}
 
@@ -363,13 +386,13 @@ function vl_render_inline_ad_card( $ad ) {
  * @return string
  */
 function vl_default_banner_html( $label, $title, $text, $url, $cta, $bg, $color = '#1a2230' ) {
-	return '<a href="' . esc_url( $url ) . '" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;width:100%;padding:1rem 1.25rem;text-decoration:none;background:' . esc_attr( $bg ) . ';color:' . esc_attr( $color ) . ';border-radius:14px;">'
-		. '<span style="display:block;min-width:0;">'
-		. '<span style="display:block;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;opacity:0.75;">' . esc_html( $label ) . '</span>'
-		. '<strong style="display:block;margin-top:0.35rem;font-size:1.15rem;line-height:1.25;font-family:Georgia,serif;">' . esc_html( $title ) . '</strong>'
-		. '<span style="display:block;margin-top:0.25rem;font-size:0.88rem;opacity:0.85;">' . esc_html( $text ) . '</span>'
+	return '<a class="vl-ad-banner" href="' . esc_url( $url ) . '" style="background:' . esc_attr( $bg ) . ';color:' . esc_attr( $color ) . ';">'
+		. '<span class="vl-ad-banner__copy">'
+		. '<span class="vl-ad-banner__eyebrow">' . esc_html( $label ) . '</span>'
+		. '<strong class="vl-ad-banner__title">' . esc_html( $title ) . '</strong>'
+		. '<span class="vl-ad-banner__text">' . esc_html( $text ) . '</span>'
 		. '</span>'
-		. '<span style="display:inline-block;padding:0.55rem 0.95rem;border-radius:999px;background:#1a2230;color:#fff;font-size:0.82rem;font-weight:700;white-space:nowrap;">' . esc_html( $cta ) . '</span>'
+		. '<span class="vl-ad-banner__cta">' . esc_html( $cta ) . '</span>'
 		. '</a>';
 }
 
@@ -383,12 +406,13 @@ function vl_default_slot_ads() {
 	$new  = home_url( '/collection/new-arrivals/' );
 	$home = home_url( '/' );
 
-	$cards = array(
+	// Lean defaults only — below_nav / between_paragraphs stay available in admin but are not seeded.
+	return array(
 		array(
 			'title'    => 'Default: Header top',
 			'slot'     => 'header_top',
 			'priority' => 10,
-			'html'     => vl_default_banner_html( 'Sponsored', 'Festival looks, ready to ship', 'Browse curated edits with COD available', $sale, 'Shop now', 'linear-gradient(90deg,#f7f1e8,#efe0cb)' ),
+			'html'     => vl_default_banner_html( 'Sponsored', 'Festival looks, ready to ship', 'Browse curated edits this season', $sale, 'Shop now', 'linear-gradient(90deg,#f7f1e8,#efe0cb)' ),
 		),
 		array(
 			'title'    => 'Default: Below hero',
@@ -403,14 +427,42 @@ function vl_default_slot_ads() {
 			'html'     => vl_default_banner_html( 'Sponsored', 'Explore this collection', 'Find your next look in curated categories', $home, 'Browse', 'linear-gradient(90deg,#f3efe6,#e7d7c0)' ),
 		),
 		array(
+			'title'    => 'Grid ad: Sale edit',
+			'slot'     => 'between_products',
+			'priority' => 5,
+			'html'     => '<a class="vl-ad-fill" href="' . esc_url( $sale ) . '" style="padding:1.25rem;background:linear-gradient(165deg,#1a2230 0%,#2c3648 55%,#b24a1b 140%);color:#fff;">'
+				. '<span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;font-weight:700;">Sponsored</span>'
+				. '<strong style="display:block;margin-top:0.85rem;font-size:1.35rem;line-height:1.2;font-family:Georgia,serif;">Sale &amp; Offers</strong>'
+				. '<span style="display:block;margin-top:0.45rem;font-size:0.9rem;opacity:0.9;">Curated looks at better prices</span>'
+				. '<span style="display:inline-block;margin-top:1.1rem;padding:0.55rem 0.9rem;border-radius:999px;background:#fff;color:#1a2230;font-size:0.82rem;font-weight:700;">Shop sale</span>'
+				. '</a>',
+		),
+		array(
+			'title'    => 'Grid ad: New arrivals',
+			'slot'     => 'between_products',
+			'priority' => 6,
+			'html'     => '<a class="vl-ad-fill" href="' . esc_url( $new ) . '" style="padding:1.25rem;background:linear-gradient(165deg,#f7f1e8 0%,#e8d7c0 60%,#d36a2f 130%);color:#1a2230;">'
+				. '<span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.7;font-weight:700;">Sponsored</span>'
+				. '<strong style="display:block;margin-top:0.85rem;font-size:1.35rem;line-height:1.2;font-family:Georgia,serif;">New Arrivals</strong>'
+				. '<span style="display:block;margin-top:0.45rem;font-size:0.9rem;opacity:0.85;">Fresh drops for the season</span>'
+				. '<span style="display:inline-block;margin-top:1.1rem;padding:0.55rem 0.9rem;border-radius:999px;background:#1a2230;color:#fff;font-size:0.82rem;font-weight:700;">Explore new</span>'
+				. '</a>',
+		),
+		array(
 			'title'    => 'Default: Sidebar',
 			'slot'     => 'sidebar',
 			'priority' => 10,
-			'html'     => '<a href="' . esc_url( $sale ) . '" style="display:block;padding:1.25rem;text-align:center;text-decoration:none;background:linear-gradient(165deg,#1a2230,#b24a1b);color:#fff;border-radius:14px;">'
+			'html'     => '<a class="vl-ad-fill" href="' . esc_url( $sale ) . '" style="padding:1.25rem;text-align:center;background:linear-gradient(165deg,#1a2230,#b24a1b);color:#fff;justify-content:center;align-items:center;">'
 				. '<span style="display:block;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.8;font-weight:700;">Sponsored</span>'
 				. '<strong style="display:block;margin-top:0.6rem;font-size:1.2rem;font-family:Georgia,serif;">Sale picks</strong>'
 				. '<span style="display:block;margin-top:0.35rem;font-size:0.88rem;opacity:0.9;">Better prices, same polish</span>'
 				. '</a>',
+		),
+		array(
+			'title'    => 'Default: Before related',
+			'slot'     => 'before_related',
+			'priority' => 10,
+			'html'     => vl_default_banner_html( 'Sponsored', 'More looks nearby', 'Continue browsing related edits', $home, 'Browse', 'linear-gradient(90deg,#efe4d4,#f7f1e8)' ),
 		),
 		array(
 			'title'    => 'Default: Before footer',
@@ -424,31 +476,7 @@ function vl_default_slot_ads() {
 			'priority' => 10,
 			'html'     => vl_default_banner_html( 'Sponsored', 'JK Fashion', 'Premium fashion discovery', $home, 'Home', 'linear-gradient(90deg,#1a2230,#2c3648)', '#fff' ),
 		),
-		array(
-			'title'    => 'Grid ad: Sale edit',
-			'slot'     => 'between_products',
-			'priority' => 5,
-			'html'     => '<a href="' . esc_url( $sale ) . '" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:260px;padding:1.25rem;text-decoration:none;background:linear-gradient(165deg,#1a2230 0%,#2c3648 55%,#b24a1b 140%);color:#fff;border-radius:inherit;">'
-				. '<span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;font-weight:700;">Sponsored</span>'
-				. '<strong style="display:block;margin-top:0.85rem;font-size:1.35rem;line-height:1.2;font-family:Georgia,serif;">Sale &amp; Offers</strong>'
-				. '<span style="display:block;margin-top:0.45rem;font-size:0.9rem;opacity:0.9;">Curated looks at better prices</span>'
-				. '<span style="display:inline-block;margin-top:1.1rem;padding:0.55rem 0.9rem;border-radius:999px;background:#fff;color:#1a2230;font-size:0.82rem;font-weight:700;">Shop sale</span>'
-				. '</a>',
-		),
-		array(
-			'title'    => 'Grid ad: New arrivals',
-			'slot'     => 'between_products',
-			'priority' => 6,
-			'html'     => '<a href="' . esc_url( $new ) . '" style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-height:260px;padding:1.25rem;text-decoration:none;background:linear-gradient(165deg,#f7f1e8 0%,#e8d7c0 60%,#d36a2f 130%);color:#1a2230;border-radius:inherit;">'
-				. '<span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;opacity:0.7;font-weight:700;">Sponsored</span>'
-				. '<strong style="display:block;margin-top:0.85rem;font-size:1.35rem;line-height:1.2;font-family:Georgia,serif;">New Arrivals</strong>'
-				. '<span style="display:block;margin-top:0.45rem;font-size:0.9rem;opacity:0.85;">Fresh drops for the season</span>'
-				. '<span style="display:inline-block;margin-top:1.1rem;padding:0.55rem 0.9rem;border-radius:999px;background:#1a2230;color:#fff;font-size:0.82rem;font-weight:700;">Explore new</span>'
-				. '</a>',
-		),
 	);
-
-	return $cards;
 }
 
 /**
@@ -469,11 +497,35 @@ function vl_default_product_ad_cards() {
 /**
  * Ensure default ads exist for all main slots (auto seed).
  */
+/**
+ * Default slots that must have at least one enabled ad after seed.
+ *
+ * @return string[]
+ */
+function vl_default_seed_slots() {
+	return array(
+		'header_top',
+		'below_hero',
+		'before_category',
+		'between_products',
+		'sidebar',
+		'before_related',
+		'before_footer',
+		'footer',
+	);
+}
+
+/**
+ * Ensure default ads exist for lean main slots (auto seed).
+ * v5 also refreshes HTML for built-in Default:/Grid ad: posts (size/outline CSS classes).
+ */
 function vl_ensure_product_ad_card() {
-	if ( get_option( 'vl_default_ads_seeded_v3' ) ) {
-		// Still fill any missing slot that has zero enabled ads.
+	$slots      = vl_default_seed_slots();
+	$refresh_v5 = ! get_option( 'vl_default_ads_seeded_v5' );
+
+	if ( get_option( 'vl_default_ads_seeded_v4' ) && ! $refresh_v5 ) {
 		$needed = false;
-		foreach ( array( 'header_top', 'below_hero', 'before_category', 'between_products', 'sidebar', 'before_footer', 'footer' ) as $slot ) {
+		foreach ( $slots as $slot ) {
 			if ( empty( vl_get_ads_for_slot( $slot ) ) ) {
 				$needed = true;
 				break;
@@ -484,9 +536,29 @@ function vl_ensure_product_ad_card() {
 		}
 	}
 
-	$created = 0;
 	foreach ( vl_default_slot_ads() as $card ) {
 		$existing = vl_get_ads_for_slot( $card['slot'] );
+		$matched  = null;
+
+		foreach ( $existing as $ad ) {
+			if ( $ad->post_title === $card['title'] ) {
+				$matched = $ad;
+				break;
+			}
+		}
+
+		if ( $matched ) {
+			if ( $refresh_v5 ) {
+				update_post_meta( $matched->ID, '_vl_ad_code', $card['html'] );
+			}
+			continue;
+		}
+
+		if ( ! empty( $existing ) && ! $refresh_v5 ) {
+			continue;
+		}
+
+		// Only create when slot is empty (avoid duplicate custom ads).
 		if ( ! empty( $existing ) ) {
 			continue;
 		}
@@ -509,9 +581,10 @@ function vl_ensure_product_ad_card() {
 		update_post_meta( $ad_id, '_vl_ad_desktop', '1' );
 		update_post_meta( $ad_id, '_vl_ad_mobile', '1' );
 		update_post_meta( $ad_id, '_vl_ad_targets', array( 'all' ) );
-		$created++;
 	}
 
+	update_option( 'vl_default_ads_seeded_v5', 1 );
+	update_option( 'vl_default_ads_seeded_v4', 1 );
 	update_option( 'vl_default_ads_seeded_v3', 1 );
 	update_option( 'vl_product_ad_card_seeded_v2', 1 );
 	update_option( 'vl_product_ad_card_seeded', 1 );

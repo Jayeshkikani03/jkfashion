@@ -1,6 +1,6 @@
 <?php
 /**
- * Product card — price on image, title + time below.
+ * Product card — price on image, title + View only.
  *
  * @package Dynamic_Fashion_Theme
  */
@@ -37,10 +37,10 @@ $time_label = human_time_diff( get_the_time( 'U', $post_id ), current_time( 'tim
 			the_post_thumbnail(
 				'large',
 				array(
-					'loading'       => 'lazy',
-					'alt'           => esc_attr( $title ),
-					'sizes'         => '(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw',
-					'decoding'      => 'async',
+					'loading'  => 'lazy',
+					'alt'      => esc_attr( $title ),
+					'sizes'    => '(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw',
+					'decoding' => 'async',
 				)
 			);
 			?>
@@ -57,6 +57,6 @@ $time_label = human_time_diff( get_the_time( 'U', $post_id ), current_time( 'tim
 	</a>
 	<div class="vl-product-card__body">
 		<h3 class="vl-product-card__title"><a href="<?php the_permalink(); ?>"><?php echo esc_html( $title ); ?></a></h3>
-		<a class="vl-product-card__view" href="<?php the_permalink(); ?>"><?php esc_html_e( 'View / Buy COD', 'dynamic-fashion' ); ?></a>
+		<a class="vl-product-card__view" href="<?php the_permalink(); ?>"><?php esc_html_e( 'View', 'dynamic-fashion' ); ?></a>
 	</div>
 </article>

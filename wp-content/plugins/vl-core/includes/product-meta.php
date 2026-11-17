@@ -43,6 +43,19 @@ function vl_render_product_details_metabox( $post ) {
 
 	$gallery_ids = array_filter( array_map( 'absint', explode( ',', (string) $gallery ) ) );
 	$thumb_id    = (int) get_post_thumbnail_id( $post->ID );
+	$selected    = wp_get_post_terms( $post->ID, 'product_category', array( 'fields' => 'ids' ) );
+	if ( is_wp_error( $selected ) ) {
+		$selected = array();
+	}
+	$selected = array_map( 'intval', $selected );
+	$terms    = get_terms(
+		array(
+			'taxonomy'   => 'product_category',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
 	?>
 	<div class="vl-admin-box">
 		<div class="vl-admin-section vl-admin-section--photo">
@@ -76,13 +89,36 @@ function vl_render_product_details_metabox( $post ) {
 			</div>
 		</div>
 
+		<div class="vl-admin-section vl-admin-section--cats">
+			<h3><?php esc_html_e( '3. Product Category *', 'vl-core' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Choose where this product appears (Shop menu, collection pages, filters). Tick at least one.', 'vl-core' ); ?></p>
+			<?php if ( is_wp_error( $terms ) || empty( $terms ) ) : ?>
+				<p class="description">
+					<?php esc_html_e( 'No categories yet.', 'vl-core' ); ?>
+					<a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=product_category&post_type=fashion_product' ) ); ?>"><?php esc_html_e( 'Add categories', 'vl-core' ); ?></a>
+				</p>
+			<?php else : ?>
+				<div class="vl-cat-grid">
+					<?php foreach ( $terms as $term ) : ?>
+						<label class="vl-check vl-check--cat">
+							<input type="checkbox" name="vl_product_cats[]" value="<?php echo esc_attr( (string) $term->term_id ); ?>" <?php checked( in_array( (int) $term->term_id, $selected, true ) ); ?>>
+							<?php echo esc_html( $term->name ); ?>
+						</label>
+					<?php endforeach; ?>
+				</div>
+				<p class="description" style="margin-top:8px;">
+					<a href="<?php echo esc_url( admin_url( 'edit-tags.php?taxonomy=product_category&post_type=fashion_product' ) ); ?>"><?php esc_html_e( 'Manage / add categories', 'vl-core' ); ?></a>
+				</p>
+			<?php endif; ?>
+		</div>
+
 		<div class="vl-admin-section">
-			<h3><?php esc_html_e( '3. Buying', 'vl-core' ); ?></h3>
+			<h3><?php esc_html_e( '4. Buying', 'vl-core' ); ?></h3>
 			<p class="description"><?php esc_html_e( 'Customers buy with Cash on Delivery (COD) on the product page. Orders appear under Orders (COD) in admin.', 'vl-core' ); ?></p>
 		</div>
 
 		<div class="vl-admin-section">
-			<h3><?php esc_html_e( '4. Extra gallery images (optional)', 'vl-core' ); ?></h3>
+			<h3><?php esc_html_e( '5. Extra gallery images (optional)', 'vl-core' ); ?></h3>
 			<p class="description"><?php esc_html_e( 'Only if you want more photos on the product page.', 'vl-core' ); ?></p>
 			<input type="hidden" id="vl_gallery_ids" name="vl_gallery_ids" value="<?php echo esc_attr( implode( ',', $gallery_ids ) ); ?>">
 			<div id="vl-gallery-preview" class="vl-gallery-preview">
@@ -97,7 +133,7 @@ function vl_render_product_details_metabox( $post ) {
 		</div>
 
 		<div class="vl-admin-section">
-			<h3><?php esc_html_e( '5. Show on homepage section', 'vl-core' ); ?></h3>
+			<h3><?php esc_html_e( '6. Show on homepage section', 'vl-core' ); ?></h3>
 			<label class="vl-check"><input type="checkbox" name="vl_is_featured" value="1" <?php checked( $is_featured, '1' ); ?>> <?php esc_html_e( 'Featured', 'vl-core' ); ?></label>
 			<label class="vl-check"><input type="checkbox" name="vl_is_new" value="1" <?php checked( $is_new, '1' ); ?>> <?php esc_html_e( 'New Arrival', 'vl-core' ); ?></label>
 			<label class="vl-check"><input type="checkbox" name="vl_is_trending" value="1" <?php checked( $is_trending, '1' ); ?>> <?php esc_html_e( 'Trending', 'vl-core' ); ?></label>
@@ -169,6 +205,13 @@ function vl_save_product_meta( $post_id ) {
 	foreach ( $flags as $flag ) {
 		$value = isset( $_POST[ $flag ] ) ? '1' : '0';
 		update_post_meta( $post_id, '_' . $flag, $value );
+	}
+
+	// Categories from the main product box (clear when none checked).
+	if ( isset( $_POST['vl_product_meta_nonce'] ) ) {
+		$cat_ids = isset( $_POST['vl_product_cats'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['vl_product_cats'] ) ) : array();
+		$cat_ids = array_values( array_filter( $cat_ids ) );
+		wp_set_object_terms( $post_id, $cat_ids, 'product_category', false );
 	}
 }
 add_action( 'save_post', 'vl_save_product_meta' );

@@ -10,6 +10,124 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Default fashion guide posts (used by auto-setup when Blogs / Guides is empty).
+ *
+ * @return array
+ */
+function vl_default_guide_posts() {
+	return array(
+		array(
+			'title'   => 'How to build a festive capsule wardrobe',
+			'topic'   => 'Festive style',
+			'content' => "<p>A festive capsule does not need dozens of pieces. Start with one statement ethnic set, one versatile blazer, a refined saree or dress option, and two pairs of footwear that work across events.</p>\n\n<p>Keep accessories intentional: one bold jewelry set and one minimal everyday option. This keeps packing simple and styling fast for Diwali, weddings, and family gatherings.</p>\n\n<p>At JK Fashion, browse <strong>Festival Fashion</strong> and <strong>Luxury Collection</strong> for pieces that mix easily without looking overdone.</p>",
+		),
+		array(
+			'title'   => 'Styling slides beyond loungewear',
+			'topic'   => 'Footwear',
+			'content' => "<p>Slides can move beyond home wear when the silhouette is clean and the color is intentional.</p>\n\n<p>Pair matte black slides with tailored trousers and a knit top, or choose ivory slides with linen separates for daytime polish. Avoid overly distressed pairings if you want a more elevated result.</p>\n\n<p>Explore our <strong>Best Slides</strong> edits for easy everyday footwear that still looks finished.</p>",
+		),
+		array(
+			'title'   => 'Luxury looks that still feel wearable',
+			'topic'   => 'Luxury',
+			'content' => "<p>Luxury does not have to feel formal. Soft champagne tones, structured neutrals, and careful embroidery keep outfits special while remaining wearable.</p>\n\n<p>Focus on fabric quality and fit first, then add one decorative detail so the look stays refined — perfect for receptions, dinners, and festive evenings.</p>\n\n<p>Shop <strong>Luxury Collection</strong> for elevated pieces you can actually wear again.</p>",
+		),
+		array(
+			'title'   => 'New season layering ideas for everyday polish',
+			'topic'   => 'Trends',
+			'content' => "<p>Layering is the fastest way to refresh what you already own. Start with a clean base tee or kurta, add a light cardigan or structured jacket, then finish with one accent — jewelry, a belt, or sharper footwear.</p>\n\n<p>Keep colors in one family (cream, ivory, navy, soft brown) so mixes feel intentional instead of busy.</p>\n\n<p>Check <strong>New Arrivals</strong> and <strong>Trending Fashion</strong> for pieces that layer well for work and weekend.</p>",
+		),
+		array(
+			'title'   => 'Smart COD shopping tips for fashion finds',
+			'topic'   => 'Shopping tips',
+			'content' => "<p>Cash on Delivery is simple — still choose thoughtfully. Check size notes, fabric description, and photos carefully before placing an order.</p>\n\n<p>Keep your phone reachable so delivery confirmation is smooth. If you are ordering for an event, leave a few days buffer for shipping.</p>\n\n<p>Orders of ₹99+ also unlock a next-look coupon on your thank-you page — a small perk for continuing your style edit.</p>",
+		),
+		array(
+			'title'   => 'Women’s wardrobe staples that always work',
+			'topic'   => 'Women\'s fashion',
+			'content' => "<p>A strong everyday edit usually includes: one easy kurti or top set, one polished dress or co-ord, comfortable footwear, and a light outer layer.</p>\n\n<p>Neutral bases make festive jewelry and seasonal colors easier to swap in. Build from staples, then add trend pieces sparingly.</p>\n\n<p>Browse <strong>Women’s Fashion</strong> for wearable everyday and occasion-ready looks.</p>",
+		),
+	);
+}
+
+/**
+ * Ensure default Blogs / Guides exist (idempotent).
+ *
+ * @param bool $force Recreate missing defaults even if some guides exist.
+ * @return int Number of guides created.
+ */
+function vl_ensure_default_guides( $force = false ) {
+	$counts = wp_count_posts( 'fashion_article' );
+	$publish = isset( $counts->publish ) ? (int) $counts->publish : 0;
+
+	if ( ! $force && $publish > 0 ) {
+		update_option( 'vl_guides_seeded', 1 );
+		return 0;
+	}
+
+	if ( ! $force && get_option( 'vl_guides_seeded' ) && $publish > 0 ) {
+		return 0;
+	}
+
+	$created = 0;
+	$topics  = array();
+
+	foreach ( vl_default_guide_posts() as $article ) {
+		$exists = get_page_by_title( $article['title'], OBJECT, 'fashion_article' );
+		if ( $exists ) {
+			continue;
+		}
+
+		$post_id = wp_insert_post(
+			array(
+				'post_title'   => $article['title'],
+				'post_content' => $article['content'],
+				'post_status'  => 'publish',
+				'post_type'    => 'fashion_article',
+			),
+			true
+		);
+
+		if ( is_wp_error( $post_id ) || ! $post_id ) {
+			continue;
+		}
+
+		$topic_name = ! empty( $article['topic'] ) ? $article['topic'] : 'Style notes';
+		if ( ! isset( $topics[ $topic_name ] ) ) {
+			$term = term_exists( $topic_name, 'guide_topic' );
+			if ( ! $term ) {
+				$term = wp_insert_term( $topic_name, 'guide_topic' );
+			}
+			if ( ! is_wp_error( $term ) ) {
+				$topics[ $topic_name ] = (int) ( is_array( $term ) ? $term['term_id'] : $term );
+			}
+		}
+		if ( ! empty( $topics[ $topic_name ] ) ) {
+			wp_set_object_terms( $post_id, array( $topics[ $topic_name ] ), 'guide_topic' );
+		}
+
+		$created++;
+	}
+
+	update_option( 'vl_guides_seeded', 1 );
+	return $created;
+}
+
+/**
+ * Backfill default guides on admin/front if none exist yet.
+ */
+function vl_maybe_seed_default_guides() {
+	if ( get_option( 'vl_guides_seeded' ) ) {
+		$counts  = wp_count_posts( 'fashion_article' );
+		$publish = isset( $counts->publish ) ? (int) $counts->publish : 0;
+		if ( $publish > 0 ) {
+			return;
+		}
+	}
+	vl_ensure_default_guides( false );
+}
+add_action( 'init', 'vl_maybe_seed_default_guides', 45 );
+
+/**
  * Handle seed form submission.
  */
 function vl_handle_seed_content() {
@@ -194,31 +312,7 @@ function vl_seed_content() {
 		}
 	}
 
-	$articles = array(
-		array(
-			'title'   => 'How to build a festive capsule wardrobe',
-			'content' => "A festive capsule does not need dozens of pieces. Start with one statement ethnic set, one versatile blazer, a refined saree or dress option, and two pairs of footwear that work across events.\n\nKeep accessories intentional: one bold jewelry set and one minimal everyday option. This keeps packing simple and styling fast.",
-		),
-		array(
-			'title'   => 'Styling slides beyond loungewear',
-			'content' => "Slides can move beyond home wear when the silhouette is clean and the color is intentional.\n\nPair matte black slides with tailored trousers and a knit top, or choose ivory slides with linen separates for daytime polish. Avoid overly distressed pairings if you want a more elevated result.",
-		),
-		array(
-			'title'   => 'Luxury looks that still feel wearable',
-			'content' => "Luxury does not have to feel formal. Soft champagne tones, structured neutrals, and careful embroidery keep outfits special while remaining wearable.\n\nFocus on fabric quality and fit first, then add one decorative detail so the look stays refined.",
-		),
-	);
-
-	foreach ( $articles as $article ) {
-		wp_insert_post(
-			array(
-				'post_title'   => $article['title'],
-				'post_content' => $article['content'],
-				'post_status'  => 'publish',
-				'post_type'    => 'fashion_article',
-			)
-		);
-	}
+	vl_ensure_default_guides( true );
 
 	// Pages.
 	$about_id = wp_insert_post(

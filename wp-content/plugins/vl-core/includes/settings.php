@@ -24,19 +24,19 @@ function vl_default_homepage_settings() {
 		'hero_secondary_url'   => home_url( '/about/' ),
 		'newsletter_title'     => 'Style notes in your inbox',
 		'newsletter_text'      => 'Get new arrivals and styling ideas. No spam — unsubscribe anytime.',
-		'meta_description'     => 'Premium fashion discovery with curated collections and Cash on Delivery.',
-		'footer_about'         => 'Premium fashion discovery for curated clothing, festive edits, and trending styles. Order easily with Cash on Delivery.',
-		'footer_support'       => 'Questions about an order? Visit Contact and we will help with delivery details.',
+		'meta_description'     => 'Premium fashion discovery with curated collections and seasonal edits.',
+		'footer_about'         => 'Premium fashion discovery for curated clothing, festive edits, and trending styles.',
+		'footer_support'       => 'Questions? Visit the Contact page and we will help.',
 		'footer_copyright'     => '',
-		'topbar_text'          => 'Premium fashion • Cash on Delivery available',
+		'topbar_text'          => 'Premium fashion discovery',
 		'topbar_link_label'    => 'Shop Sale',
 		'topbar_link_url'      => home_url( '/collection/sale-and-offers/' ),
 		'show_topbar'          => '1',
-		'show_catstrip'        => '1',
-		'contact_phone'        => '+91 98765 43210',
+		'show_catstrip'        => '0',
+		'contact_phone'        => '',
 		'contact_email'        => '',
-		'contact_whatsapp'     => '919876543210',
-		'contact_address'      => 'India',
+		'contact_whatsapp'     => '',
+		'contact_address'      => '',
 		'cod_note'             => 'Cash on Delivery available. Pay when your order arrives.',
 		'products_per_page'    => '12',
 		'ad_card_every'        => '4',
@@ -82,8 +82,8 @@ function vl_settings_pages() {
 			'render'=> 'vl_render_settings_footer',
 		),
 		'vl-settings-tracking' => array(
-			'title' => __( 'Tracking & SEO Tags', 'vl-core' ),
-			'menu'  => __( 'Tracking & SEO', 'vl-core' ),
+			'title' => __( 'Analytics & tracking', 'vl-core' ),
+			'menu'  => __( 'Analytics & tracking', 'vl-core' ),
 			'render'=> 'vl_render_settings_tracking',
 		),
 		'vl-settings-shop'     => array(
@@ -304,7 +304,7 @@ function vl_render_settings_identity() {
 	}
 	$settings = vl_get_homepage_settings();
 	?>
-	<p class="description"><?php esc_html_e( 'Site name, tagline, SEO text, and top bar — used across the whole website.', 'vl-core' ); ?></p>
+	<p class="description"><?php esc_html_e( 'Site name, logo, tagline, SEO text, and top bar — used across the whole website.', 'vl-core' ); ?></p>
 	<form method="post" action="options.php">
 		<?php settings_fields( 'vl_settings_group' ); ?>
 		<input type="hidden" name="vl_flags_page" value="1">
@@ -312,6 +312,17 @@ function vl_render_settings_identity() {
 			<tr>
 				<th scope="row"><label for="vl_site_title"><?php esc_html_e( 'Site name', 'vl-core' ); ?></label></th>
 				<td><input class="regular-text" type="text" id="vl_site_title" name="vl_site_title" value="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>"></td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Site logo', 'vl-core' ); ?></th>
+				<td>
+					<?php if ( has_custom_logo() ) : ?>
+						<div style="margin-bottom:8px;"><?php the_custom_logo(); ?></div>
+					<?php else : ?>
+						<p class="description"><?php esc_html_e( 'No logo uploaded — only the site name is shown in the header.', 'vl-core' ); ?></p>
+					<?php endif; ?>
+					<a class="button" href="<?php echo esc_url( admin_url( 'customize.php?autofocus[control]=custom_logo' ) ); ?>"><?php esc_html_e( 'Upload / change site logo', 'vl-core' ); ?></a>
+				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="vl_site_tagline"><?php esc_html_e( 'Tagline', 'vl-core' ); ?></label></th>
@@ -338,12 +349,6 @@ function vl_render_settings_identity() {
 			<tr>
 				<th scope="row"><label for="topbar_link_url"><?php esc_html_e( 'Top bar link URL', 'vl-core' ); ?></label></th>
 				<td><input class="large-text" type="url" id="topbar_link_url" name="vl_homepage_settings[topbar_link_url]" value="<?php echo esc_url( $settings['topbar_link_url'] ); ?>"></td>
-			</tr>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'Category strip', 'vl-core' ); ?></th>
-				<td>
-					<label><input type="checkbox" name="vl_homepage_settings[show_catstrip]" value="1" <?php checked( $settings['show_catstrip'], '1' ); ?>> <?php esc_html_e( 'Show category pills under header', 'vl-core' ); ?></label>
-				</td>
 			</tr>
 		</table>
 		<?php submit_button( __( 'Save Site Identity', 'vl-core' ) ); ?>
@@ -413,7 +418,7 @@ function vl_render_settings_footer() {
 	}
 	$settings = vl_get_homepage_settings();
 	?>
-	<p class="description"><?php esc_html_e( 'Footer text and contact details shown on the website.', 'vl-core' ); ?></p>
+	<p class="description"><?php esc_html_e( 'Footer text and contact details. Leave phone / WhatsApp / email / address empty to hide them on the website.', 'vl-core' ); ?></p>
 	<form method="post" action="options.php">
 		<?php settings_fields( 'vl_settings_group' ); ?>
 		<table class="form-table" role="presentation">
@@ -433,18 +438,24 @@ function vl_render_settings_footer() {
 			</tr>
 			<tr>
 				<th scope="row"><label for="contact_phone"><?php esc_html_e( 'Phone', 'vl-core' ); ?></label></th>
-				<td><input class="regular-text" type="text" id="contact_phone" name="vl_homepage_settings[contact_phone]" value="<?php echo esc_attr( $settings['contact_phone'] ); ?>"></td>
+				<td>
+					<input class="regular-text" type="text" id="contact_phone" name="vl_homepage_settings[contact_phone]" value="<?php echo esc_attr( $settings['contact_phone'] ); ?>">
+					<p class="description"><?php esc_html_e( 'Clear this field to remove the phone link from the site.', 'vl-core' ); ?></p>
+				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="contact_whatsapp"><?php esc_html_e( 'WhatsApp number', 'vl-core' ); ?></label></th>
 				<td>
 					<input class="regular-text" type="text" id="contact_whatsapp" name="vl_homepage_settings[contact_whatsapp]" value="<?php echo esc_attr( $settings['contact_whatsapp'] ); ?>" placeholder="919876543210">
-					<p class="description"><?php esc_html_e( 'Country code + number, no + or spaces (example: 919876543210).', 'vl-core' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Country code + number, no + or spaces. Leave empty to hide WhatsApp.', 'vl-core' ); ?></p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="contact_email"><?php esc_html_e( 'Email', 'vl-core' ); ?></label></th>
-				<td><input class="regular-text" type="email" id="contact_email" name="vl_homepage_settings[contact_email]" value="<?php echo esc_attr( $settings['contact_email'] ); ?>"></td>
+				<td>
+					<input class="regular-text" type="email" id="contact_email" name="vl_homepage_settings[contact_email]" value="<?php echo esc_attr( $settings['contact_email'] ); ?>">
+					<p class="description"><?php esc_html_e( 'Leave empty to hide email on the site.', 'vl-core' ); ?></p>
+				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="contact_address"><?php esc_html_e( 'Address', 'vl-core' ); ?></label></th>
@@ -461,33 +472,46 @@ function vl_render_settings_footer() {
  * Tracking page.
  */
 function vl_render_settings_tracking() {
-	if ( ! vl_settings_wrap_start( __( 'Tracking & SEO Tags', 'vl-core' ), 'vl-settings-tracking' ) ) {
+	if ( ! vl_settings_wrap_start( __( 'Analytics & tracking', 'vl-core' ), 'vl-settings-tracking' ) ) {
 		return;
 	}
 	$settings = vl_get_homepage_settings();
 	?>
-	<p class="description"><?php esc_html_e( 'Paste Google Analytics, Meta Pixel, Google Ads, or verification tags here.', 'vl-core' ); ?></p>
+	<p class="description"><?php esc_html_e( 'Sitewide scripts only. Google Auto Ads / AdSense account code goes in Head tags. Manual banner units go under Advertisements with a slot tag.', 'vl-core' ); ?></p>
 	<form method="post" action="options.php">
 		<?php settings_fields( 'vl_settings_group' ); ?>
 		<table class="form-table" role="presentation">
 			<tr>
-				<th scope="row"><label for="head_scripts"><?php esc_html_e( 'Head tags', 'vl-core' ); ?></label></th>
+				<th scope="row"><label for="head_scripts"><?php esc_html_e( 'Head tags (Auto Ads / AdSense / GA4)', 'vl-core' ); ?></label></th>
 				<td>
-					<textarea class="large-text code" rows="10" id="head_scripts" name="vl_homepage_settings[head_scripts]"><?php echo esc_textarea( $settings['head_scripts'] ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'GA4, GTM head, Meta verification, Search Console meta.', 'vl-core' ); ?></p>
+					<textarea class="large-text code" rows="10" id="head_scripts" name="vl_homepage_settings[head_scripts]" placeholder="&lt;script async src=&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX&quot; crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;"><?php echo esc_textarea( $settings['head_scripts'] ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'Paste Google Auto Ads / AdSense client script here (adsbygoogle.js?client=ca-pub-…). Also GA4, GTM head, Search Console.', 'vl-core' ); ?></p>
+					<ol class="description" style="margin:8px 0 0 1.2rem;">
+						<li><?php esc_html_e( 'AdSense → Ads → Auto ads → copy site script', 'vl-core' ); ?></li>
+						<li><?php esc_html_e( 'Paste into Head tags → Save', 'vl-core' ); ?></li>
+						<li><?php esc_html_e( 'Fixed banners (header / between products / footer) use Advertisements + slot tags', 'vl-core' ); ?></li>
+					</ol>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="body_scripts"><?php esc_html_e( 'Body / footer tags', 'vl-core' ); ?></label></th>
 				<td>
 					<textarea class="large-text code" rows="8" id="body_scripts" name="vl_homepage_settings[body_scripts]"><?php echo esc_textarea( $settings['body_scripts'] ); ?></textarea>
-					<p class="description"><?php esc_html_e( 'Meta Pixel noscript, GTM body snippet.', 'vl-core' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Meta Pixel noscript, GTM body snippet, other footer trackers. Not for Auto Ads.', 'vl-core' ); ?></p>
 				</td>
 			</tr>
 		</table>
-		<?php submit_button( __( 'Save Tracking Tags', 'vl-core' ) ); ?>
+		<?php submit_button( __( 'Save analytics & tracking', 'vl-core' ) ); ?>
 	</form>
-	<p><a class="button" href="<?php echo esc_url( admin_url( 'edit.php?post_type=vl_ad' ) ); ?>"><?php esc_html_e( 'Manage banner ads (Advertisements)', 'vl-core' ); ?></a></p>
+
+	<div class="vl-admin-box" style="margin-top:18px;max-width:820px;padding:12px 14px;border:1px solid #dcdcde;border-radius:8px;background:#fff;">
+		<strong><?php esc_html_e( 'Where each ad type goes', 'vl-core' ); ?></strong>
+		<ul style="margin:8px 0 0 1.2rem;">
+			<li><strong><?php esc_html_e( 'Auto ads / AdSense account script', 'vl-core' ); ?></strong> → <?php esc_html_e( 'Site Settings → Analytics & tracking → Head tags', 'vl-core' ); ?></li>
+			<li><strong><?php esc_html_e( 'Manual banner / display unit HTML', 'vl-core' ); ?></strong> → <?php esc_html_e( 'Advertisements → choose slot (header_top, between_products, before_footer…)', 'vl-core' ); ?></li>
+		</ul>
+	</div>
+	<p style="margin-top:12px;"><a class="button button-primary" href="<?php echo esc_url( admin_url( 'edit.php?post_type=vl_ad' ) ); ?>"><?php esc_html_e( 'Manage Advertisements (slot tags)', 'vl-core' ); ?></a></p>
 	</div>
 	<?php
 }

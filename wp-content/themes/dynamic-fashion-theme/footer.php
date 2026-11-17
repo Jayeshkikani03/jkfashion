@@ -5,14 +5,15 @@
  * @package Dynamic_Fashion_Theme
  */
 
-$settings  = function_exists( 'vl_get_homepage_settings' ) ? vl_get_homepage_settings() : array();
-$about     = ! empty( $settings['footer_about'] ) ? $settings['footer_about'] : __( 'Premium fashion discovery for curated clothing and trending styles. Order with Cash on Delivery.', 'dynamic-fashion' );
-$support   = ! empty( $settings['footer_support'] ) ? $settings['footer_support'] : __( 'Need help with an order? Visit Contact and we will assist you.', 'dynamic-fashion' );
-$phone     = ! empty( $settings['contact_phone'] ) ? $settings['contact_phone'] : '';
-$email     = ! empty( $settings['contact_email'] ) ? $settings['contact_email'] : '';
-$whatsapp  = ! empty( $settings['contact_whatsapp'] ) ? preg_replace( '/\D+/', '', $settings['contact_whatsapp'] ) : '';
-$address   = ! empty( $settings['contact_address'] ) ? $settings['contact_address'] : '';
-$copy      = ! empty( $settings['footer_copyright'] ) ? $settings['footer_copyright'] : ( '© ' . gmdate( 'Y' ) . ' ' . get_bloginfo( 'name' ) );
+$settings = function_exists( 'vl_get_homepage_settings' ) ? vl_get_homepage_settings() : array();
+$about    = ! empty( $settings['footer_about'] ) ? $settings['footer_about'] : __( 'Premium fashion discovery for curated clothing and trending styles.', 'dynamic-fashion' );
+$support  = ! empty( $settings['footer_support'] ) ? $settings['footer_support'] : __( 'Need help? Visit the Contact page.', 'dynamic-fashion' );
+$phone    = ! empty( $settings['contact_phone'] ) ? trim( (string) $settings['contact_phone'] ) : '';
+$email    = ! empty( $settings['contact_email'] ) ? trim( (string) $settings['contact_email'] ) : '';
+$whatsapp = ! empty( $settings['contact_whatsapp'] ) ? preg_replace( '/\D+/', '', (string) $settings['contact_whatsapp'] ) : '';
+$address  = ! empty( $settings['contact_address'] ) ? trim( (string) $settings['contact_address'] ) : '';
+$copy     = ! empty( $settings['footer_copyright'] ) ? $settings['footer_copyright'] : ( '© ' . gmdate( 'Y' ) . ' ' . get_bloginfo( 'name' ) );
+$has_contact = ( $phone || $whatsapp || $email || $address || $support );
 ?>
 </main>
 
@@ -39,9 +40,12 @@ $copy      = ! empty( $settings['footer_copyright'] ) ? $settings['footer_copyri
 				);
 				?>
 			</div>
+			<?php if ( $has_contact ) : ?>
 			<div>
 				<h3><?php esc_html_e( 'Contact', 'dynamic-fashion' ); ?></h3>
-				<p><?php echo esc_html( $support ); ?></p>
+				<?php if ( $support ) : ?>
+					<p><?php echo esc_html( $support ); ?></p>
+				<?php endif; ?>
 				<ul class="vl-footer-nav">
 					<?php if ( $phone ) : ?>
 						<li><a href="tel:<?php echo esc_attr( preg_replace( '/\s+/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a></li>
@@ -59,6 +63,7 @@ $copy      = ! empty( $settings['footer_copyright'] ) ? $settings['footer_copyri
 					<li><a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>"><?php esc_html_e( 'Privacy Policy', 'dynamic-fashion' ); ?></a></li>
 				</ul>
 			</div>
+			<?php endif; ?>
 		</div>
 
 		<?php dft_render_ad( 'footer' ); ?>

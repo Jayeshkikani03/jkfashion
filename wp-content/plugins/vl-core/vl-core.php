@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'VL_CORE_VERSION', '1.6.3' );
+define( 'VL_CORE_VERSION', '1.9.2' );
 define( 'VL_CORE_FILE', __FILE__ );
 define( 'VL_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'VL_CORE_URL', plugin_dir_url( __FILE__ ) );
@@ -22,6 +22,7 @@ require_once VL_CORE_PATH . 'includes/helpers.php';
 require_once VL_CORE_PATH . 'includes/roles.php';
 require_once VL_CORE_PATH . 'includes/post-types.php';
 require_once VL_CORE_PATH . 'includes/product-meta.php';
+require_once VL_CORE_PATH . 'includes/cart.php';
 require_once VL_CORE_PATH . 'includes/orders.php';
 require_once VL_CORE_PATH . 'includes/ads.php';
 require_once VL_CORE_PATH . 'includes/pages.php';

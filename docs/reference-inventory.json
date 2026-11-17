@@ -66,6 +66,28 @@
       "products_json": "https://www.info.vastralaxmi.com/products/products.json",
       "categories": ["Trending_Fashion", "Festival_Fashion"],
       "product_count": 44
+    },
+    {
+      "id": "social",
+      "url": "https://social.vastralaxmi.com",
+      "products_json": "https://social.vastralaxmi.com/products/products.json",
+      "categories": [
+        "STYLE_ORBIT", "ZENORA_VOGUE", "ZAVIRA_VOGUE", "VELORA_LUXE", "STYLE_CREST", "AUREL_VOGUE",
+        "trendy_corner", "daily_chic", "seasonal_charm", "diwali_charm", "diwali_mahotsav",
+        "daily_fashion", "happy_picks", "NEW_STYLE", "Summer_Shirt_Haul"
+      ],
+      "product_count": 144
+    },
+    {
+      "id": "view",
+      "url": "https://view.vastralaxmi.com",
+      "products_json": "https://view.vastralaxmi.com/products/products.json",
+      "categories": [
+        "festive_wala", "Nightbird_trending", "Vastra_Guru", "Insta_Fashion", "Festival_1",
+        "Trend_tour", "Vastraveli", "vastraveli", "Trending_Fashion", "summer_2026",
+        "Fashion_Mantra", "Trending_1", "Trending_2", "Trending_3", "Trending_fashion", "Nightbird"
+      ],
+      "product_count": 294
     }
   ],
   "product_schema_observed": {
@@ -74,15 +96,15 @@
     "detail_route": "/products/{id}/{slug}"
   },
   "unified_category_map": {
-    "New Arrivals": ["Best_sellers", "New_Arrival", "New_Collection"],
-    "Fashion": ["fashion_26", "Clothing_Fashion", "Fashion_Collection", "Fashion_Style", "Fashion_World", "dress", "Dress_Collection"],
-    "Luxury Collection": ["Luxury_Cloth", "Best_cloth", "Best_Collection", "Best_One"],
-    "Sale and Offers": ["cloth_were", "Navrati_special_offer"],
-    "Trending Fashion": ["Trending_Fashion", "Trend_Fashion", "Trend_Collection", "Trend_Choice", "Trending_Collection", "Trending_Hub", "Casual_Style"],
+    "New Arrivals": ["Best_sellers", "New_Arrival", "New_Collection", "seasonal_charm", "NEW_STYLE", "summer_2026"],
+    "Fashion": ["fashion_26", "Clothing_Fashion", "Fashion_Collection", "Fashion_Style", "Fashion_World", "STYLE_ORBIT", "STYLE_CREST", "daily_fashion", "Vastra_Guru", "Vastraveli", "vastraveli", "Fashion_Mantra"],
+    "Luxury Collection": ["Luxury_Cloth", "Best_cloth", "Best_Collection", "Best_One", "ZENORA_VOGUE", "ZAVIRA_VOGUE", "VELORA_LUXE", "AUREL_VOGUE"],
+    "Sale and Offers": ["cloth_were", "Navrati_special_offer", "happy_picks"],
+    "Trending Fashion": ["Trending_Fashion", "Trend_Fashion", "Trend_Collection", "Trend_Choice", "Trending_Collection", "Trending_Hub", "Casual_Style", "trendy_corner", "Nightbird_trending", "Nightbird", "Trend_tour", "Trending_1", "Trending_2", "Trending_3", "Trending_fashion"],
     "Best Slides": ["Best_Slides", "Casual_Slides", "Shoes", "Shoes_Slides", "Slides_Choice", "Slides_Collection", "Slides_One", "Slippers_Collection"],
-    "Women's Fashion": ["Best_Wear", "Fashion_Boutique_hub"],
-    "Men's Fashion": [],
-    "Festival Fashion": ["Festival_Fashion", "Navrati_special_offer"],
+    "Women's Fashion": ["Best_Wear", "Fashion_Boutique_hub", "dress", "Dress_Collection", "daily_chic", "Insta_Fashion"],
+    "Men's Fashion": ["Summer_Shirt_Haul"],
+    "Festival Fashion": ["Festival_Fashion", "Navrati_special_offer", "diwali_charm", "diwali_mahotsav", "festive_wala", "Festival_1"],
     "Jewelry and Accessories": ["Best_Jewelry", "Jewelry_Accessories", "Jewelry_Collection"],
     "Fashion Guides": []
   },

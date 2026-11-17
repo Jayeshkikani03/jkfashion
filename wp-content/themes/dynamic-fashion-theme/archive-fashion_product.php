@@ -9,11 +9,6 @@ get_header();
 ?>
 
 <div class="vl-container" style="padding-top:1.5rem;padding-bottom:2.5rem;">
-	<header class="vl-archive-head">
-		<h1><?php esc_html_e( 'All products', 'dynamic-fashion' ); ?></h1>
-		<p><?php esc_html_e( 'Browse the full Vastralaxmi Fashion catalog.', 'dynamic-fashion' ); ?></p>
-	</header>
-
 	<?php dft_render_ad( 'before_category' ); ?>
 
 	<?php if ( have_posts() ) : ?>

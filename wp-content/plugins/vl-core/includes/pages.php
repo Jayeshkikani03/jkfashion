@@ -239,7 +239,7 @@ function vl_save_page_menu_meta( $post_id ) {
 	update_post_meta( $post_id, '_vl_show_in_header', isset( $_POST['vl_show_in_header'] ) ? '1' : '0' );
 
 	// Rebuild menus after page save.
-	delete_option( 'vl_menus_synced_v5' );
+	delete_option( 'vl_menus_synced_v8' );
 }
 add_action( 'save_post_page', 'vl_save_page_menu_meta' );
 
@@ -267,7 +267,7 @@ function vl_sync_site_menus() {
 		}
 	}
 
-	// Primary: Home + categories + pages marked for header.
+	// Primary: Home + Shop + all product categories (top ones visible, extras under More).
 	$pos = 1;
 	wp_update_nav_menu_item(
 		$primary_id,
@@ -282,28 +282,69 @@ function vl_sync_site_menus() {
 		)
 	);
 
-	$terms = get_terms(
-		array(
-			'taxonomy'   => 'product_category',
-			'hide_empty' => false,
-			'orderby'    => 'name',
-			'order'      => 'ASC',
-		)
-	);
-	if ( ! is_wp_error( $terms ) ) {
-		foreach ( $terms as $term ) {
-			wp_update_nav_menu_item(
-				$primary_id,
-				0,
-				array(
-					'menu-item-title'     => $term->name,
-					'menu-item-object'    => 'product_category',
-					'menu-item-object-id' => $term->term_id,
-					'menu-item-type'      => 'taxonomy',
-					'menu-item-status'    => 'publish',
-					'menu-item-position'  => $pos++,
-				)
-			);
+	$shop_url = get_post_type_archive_link( 'fashion_product' );
+	if ( $shop_url ) {
+		wp_update_nav_menu_item(
+			$primary_id,
+			0,
+			array(
+				'menu-item-title'    => __( 'Shop', 'vl-core' ),
+				'menu-item-url'      => $shop_url,
+				'menu-item-status'   => 'publish',
+				'menu-item-type'     => 'custom',
+				'menu-item-position' => $pos++,
+			)
+		);
+	}
+
+	$menu_cats = function_exists( 'vl_get_header_menu_categories' )
+		? vl_get_header_menu_categories()
+		: array( 'top' => array(), 'more' => array() );
+
+	foreach ( $menu_cats['top'] as $term ) {
+		wp_update_nav_menu_item(
+			$primary_id,
+			0,
+			array(
+				'menu-item-title'     => $term->name,
+				'menu-item-object'    => 'product_category',
+				'menu-item-object-id' => $term->term_id,
+				'menu-item-type'      => 'taxonomy',
+				'menu-item-status'    => 'publish',
+				'menu-item-position'  => $pos++,
+			)
+		);
+	}
+
+	if ( ! empty( $menu_cats['more'] ) ) {
+		$more_parent = wp_update_nav_menu_item(
+			$primary_id,
+			0,
+			array(
+				'menu-item-title'    => __( 'More', 'vl-core' ),
+				'menu-item-url'      => '#',
+				'menu-item-status'   => 'publish',
+				'menu-item-type'     => 'custom',
+				'menu-item-position' => $pos++,
+				'menu-item-classes'  => 'vl-menu-more',
+			)
+		);
+		if ( ! is_wp_error( $more_parent ) && $more_parent ) {
+			foreach ( $menu_cats['more'] as $term ) {
+				wp_update_nav_menu_item(
+					$primary_id,
+					0,
+					array(
+						'menu-item-title'     => $term->name,
+						'menu-item-object'    => 'product_category',
+						'menu-item-object-id' => $term->term_id,
+						'menu-item-type'      => 'taxonomy',
+						'menu-item-status'    => 'publish',
+						'menu-item-parent-id' => (int) $more_parent,
+						'menu-item-position'  => $pos++,
+					)
+				);
+			}
 		}
 	}
 
@@ -374,14 +415,96 @@ function vl_sync_site_menus() {
 	$locations['footer']  = $footer_id;
 	set_theme_mod( 'nav_menu_locations', $locations );
 
+	update_option( 'vl_menus_synced_v8', 1 );
+	update_option( 'vl_menus_synced_v7', 1 );
+	update_option( 'vl_menus_synced_v6', 1 );
 	update_option( 'vl_menus_synced_v5', 1 );
+}
+
+/**
+ * Split all product categories into top-level + More dropdown.
+ * Priority slugs stay visible first; every other category goes under More.
+ *
+ * @return array{top: WP_Term[], more: WP_Term[]}
+ */
+function vl_get_header_menu_categories() {
+	$priority_slugs = array(
+		'new-arrivals',
+		'fashion',
+		'trending-fashion',
+		'luxury-collection',
+		'sale-and-offers',
+		'womens-fashion',
+		'mens-fashion',
+		'festival-fashion',
+		'best-slides',
+		'jewelry-and-accessories',
+	);
+
+	$all = get_terms(
+		array(
+			'taxonomy'   => 'product_category',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
+	if ( is_wp_error( $all ) || empty( $all ) ) {
+		return array(
+			'top'  => array(),
+			'more' => array(),
+		);
+	}
+
+	$by_slug = array();
+	foreach ( $all as $term ) {
+		$by_slug[ $term->slug ] = $term;
+	}
+
+	$top     = array();
+	$used_ids = array();
+	foreach ( $priority_slugs as $slug ) {
+		if ( empty( $by_slug[ $slug ] ) ) {
+			continue;
+		}
+		$top[] = $by_slug[ $slug ];
+		$used_ids[ (int) $by_slug[ $slug ]->term_id ] = true;
+	}
+
+	// Keep header tidy: max 6 top-level category links; rest under More.
+	$max_top = 6;
+	$more    = array();
+	foreach ( $all as $term ) {
+		$id = (int) $term->term_id;
+		if ( isset( $used_ids[ $id ] ) ) {
+			continue;
+		}
+		if ( count( $top ) < $max_top ) {
+			$top[] = $term;
+			$used_ids[ $id ] = true;
+		} else {
+			$more[] = $term;
+		}
+	}
+
+	// If priority alone exceeded max, move overflow into More.
+	if ( count( $top ) > $max_top ) {
+		$overflow = array_slice( $top, $max_top );
+		$top      = array_slice( $top, 0, $max_top );
+		$more     = array_merge( $overflow, $more );
+	}
+
+	return array(
+		'top'  => $top,
+		'more' => $more,
+	);
 }
 
 /**
  * Auto sync menus once / when categories change.
  */
 function vl_maybe_sync_menus() {
-	if ( ! get_option( 'vl_menus_synced_v5' ) ) {
+	if ( ! get_option( 'vl_menus_synced_v8' ) ) {
 		vl_sync_site_menus();
 	}
 }
@@ -394,7 +517,7 @@ function vl_resync_menus_on_term_change( $term_id, $tt_id = 0, $taxonomy = '' ) 
 	if ( 'product_category' !== $taxonomy ) {
 		return;
 	}
-	delete_option( 'vl_menus_synced_v5' );
+	delete_option( 'vl_menus_synced_v8' );
 }
 add_action( 'created_product_category', 'vl_resync_menus_on_term_change', 10, 3 );
 add_action( 'edited_product_category', 'vl_resync_menus_on_term_change', 10, 3 );
@@ -404,7 +527,7 @@ add_action( 'delete_product_category', 'vl_resync_menus_on_term_change', 10, 3 )
  * On next request after category change, sync.
  */
 function vl_sync_after_term_flag() {
-	if ( ! get_option( 'vl_menus_synced_v5' ) ) {
+	if ( ! get_option( 'vl_menus_synced_v8' ) ) {
 		vl_sync_site_menus();
 	}
 }

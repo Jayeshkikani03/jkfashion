@@ -6,9 +6,8 @@
  */
 
 $settings = function_exists( 'vl_get_homepage_settings' ) ? vl_get_homepage_settings() : array();
-$topbar   = ! empty( $settings['topbar_text'] ) ? $settings['topbar_text'] : __( 'Premium fashion • Cash on Delivery available', 'dynamic-fashion' );
-$show_top = ! isset( $settings['show_topbar'] ) || '1' === (string) $settings['show_topbar'];
-$show_cat = ! isset( $settings['show_catstrip'] ) || '1' === (string) $settings['show_catstrip'];
+$topbar   = ! empty( $settings['topbar_text'] ) ? $settings['topbar_text'] : __( 'Premium fashion discovery', 'dynamic-fashion' );
+$show_top = '1' === (string) ( isset( $settings['show_topbar'] ) ? $settings['show_topbar'] : '0' );
 $top_lbl  = ! empty( $settings['topbar_link_label'] ) ? $settings['topbar_link_label'] : __( 'Shop Sale', 'dynamic-fashion' );
 $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url'] : home_url( '/collection/sale-and-offers/' );
 ?>
@@ -24,11 +23,13 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 
 <a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'dynamic-fashion' ); ?></a>
 
-<?php if ( $show_top ) : ?>
+<?php if ( $show_top && '' !== trim( (string) $topbar ) ) : ?>
 <div class="vl-topbar">
 	<div class="vl-container vl-topbar__inner">
 		<span><?php echo esc_html( $topbar ); ?></span>
-		<a href="<?php echo esc_url( $top_url ); ?>"><?php echo esc_html( $top_lbl ); ?></a>
+		<?php if ( $top_lbl && $top_url ) : ?>
+			<a href="<?php echo esc_url( $top_url ); ?>"><?php echo esc_html( $top_lbl ); ?></a>
+		<?php endif; ?>
 	</div>
 </div>
 <?php endif; ?>
@@ -41,12 +42,11 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 			<?php if ( has_custom_logo() ) : ?>
 				<?php the_custom_logo(); ?>
 			<?php else : ?>
-				<a class="site-logo-mark" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php bloginfo( 'name' ); ?>">
-					<span class="site-logo-mark__icon">VL</span>
-					<span>
-						<span class="site-title"><?php bloginfo( 'name' ); ?></span>
+				<a class="site-title-link" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+					<span class="site-title"><?php bloginfo( 'name' ); ?></span>
+					<?php if ( get_bloginfo( 'description' ) ) : ?>
 						<span class="site-description"><?php bloginfo( 'description' ); ?></span>
-					</span>
+					<?php endif; ?>
 				</a>
 			<?php endif; ?>
 		</div>
@@ -59,45 +59,31 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 					'menu_class'     => 'vl-nav__list',
 					'container'      => false,
 					'fallback_cb'    => 'dft_fallback_menu',
-					'depth'          => 1,
+					'depth'          => 2,
 				)
 			);
 			?>
 		</nav>
 
-		<button class="vl-nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
-			<span></span><span></span><span></span>
-			<span class="screen-reader-text"><?php esc_html_e( 'Menu', 'dynamic-fashion' ); ?></span>
-		</button>
-	</div>
-
-	<?php if ( $show_cat ) : ?>
-	<div class="vl-catstrip">
-		<div class="vl-container">
-			<ul class="vl-catstrip__list">
-				<?php
-				$strip = get_terms(
-					array(
-						'taxonomy'   => 'product_category',
-						'hide_empty' => false,
-						'orderby'    => 'name',
-						'order'      => 'ASC',
-					)
-				);
-				if ( ! is_wp_error( $strip ) && $strip ) {
-					foreach ( $strip as $term ) {
-						printf(
-							'<li><a href="%1$s">%2$s</a></li>',
-							esc_url( get_term_link( $term ) ),
-							esc_html( $term->name )
-						);
-					}
-				}
-				?>
-			</ul>
+		<div class="vl-header-tools">
+			<?php
+			$cart_url   = function_exists( 'vl_get_cart_url' ) ? vl_get_cart_url() : home_url( '/cart/' );
+			$cart_count = function_exists( 'vl_cart_count' ) ? vl_cart_count() : 0;
+			?>
+			<a class="vl-cart-link" href="<?php echo esc_url( $cart_url ); ?>" data-vl-cart-link aria-label="<?php esc_attr_e( 'Cart', 'dynamic-fashion' ); ?>">
+				<svg class="vl-cart-link__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+					<path d="M7 4h-2l-1 2h2l2.4 9.2a2 2 0 0 0 2 1.5h7.2a2 2 0 0 0 2-1.5L21 8H8.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+					<circle cx="10" cy="20" r="1.4" fill="currentColor"/>
+					<circle cx="18" cy="20" r="1.4" fill="currentColor"/>
+				</svg>
+				<span class="vl-cart-link__count" data-vl-cart-count<?php echo $cart_count ? '' : ' hidden'; ?>><?php echo esc_html( (string) $cart_count ); ?></span>
+			</a>
+			<button class="vl-nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
+				<span></span><span></span><span></span>
+				<span class="screen-reader-text"><?php esc_html_e( 'Menu', 'dynamic-fashion' ); ?></span>
+			</button>
 		</div>
 	</div>
-	<?php endif; ?>
 </header>
 
 <!-- Mobile drawer outside header so position:fixed works (header uses backdrop-filter). -->
@@ -114,7 +100,7 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 			'menu_class'     => 'vl-nav__list',
 			'container'      => false,
 			'fallback_cb'    => 'dft_fallback_menu',
-			'depth'          => 1,
+			'depth'          => 2,
 		)
 	);
 	?>

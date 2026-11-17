@@ -2,8 +2,10 @@
 wp-config.php
 wp-config-infinityfree.php
 reset-jayesh-password.php
+fresh-start.php
 activate-jk-fashion.php
 fix-grid-ads.php
+import-social-view.php
 .env
 .env.*
 *.pem

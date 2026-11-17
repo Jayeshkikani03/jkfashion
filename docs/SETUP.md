@@ -32,15 +32,55 @@ Already done in this build. If you need to redo:
 On plugin activate / first admin visit after hosting, VL Core automatically:
 
 1. Creates owner user **`jayesh`** (password from plugin bootstrap / change after first login)
-2. Ensures About / Contact / Privacy pages
-3. Imports catalog from `docs/imports/*.json` (or remote JSON URLs if local files are missing)
-4. Syncs header + footer menus from categories and pages
-5. Disables unused placeholder ads
+2. Ensures About / Contact / Privacy / Cart / Checkout / Thanks pages
+3. Seeds lean default ads
+4. Syncs header + footer menus
+5. **Does not** bulk-import products (keeps first boot light)
 
 Login: http://localhost:10004/wp-admin/  
-User: `jayesh`
+User: `jayesh`  
+Bootstrap password: `` qwe`123 `` (change after first login)
 
-Manual re-import anytime: **Import Catalog** → select sources → Import.
+Add products after setup: **Site Settings → Import Catalog** → check **one URL** → **Sync selected (one URL at a time)**. Repeat for the next URL. If several are checked, they still run one-by-one automatically.
+
+## 3b. Fresh start (wipe shop data, rebuild like host)
+
+**Recommended (keeps WordPress install):**
+
+1. Make sure Local site is running.
+2. Open: http://localhost:10004/fresh-start.php  
+3. Click **Run fresh start** (or with media delete).
+4. Wait for the result page (import can take a few minutes).
+5. Login as `jayesh` / `` qwe`123 ``
+6. **Delete** `fresh-start.php` from the site root.
+
+What it resets: products, ads, orders, guides, categories, VL flags, homepage settings.  
+What it rebuilds: theme + VL Core, jayesh user, pages, lean ads, live URL import, menus.
+
+**Full DB wipe (same as empty host):**
+
+1. Local app → site → **Database** → Adminer/phpMyAdmin  
+2. Select database → check all tables → Drop  
+3. Open site URL → WordPress install screen  
+4. Site title `JK Fashion` → create any temp admin → Install  
+5. Activate **VL Core** + **Dynamic Fashion Theme**  
+6. Permalinks → **Post name** → Save  
+7. Open Dashboard once (auto-setup creates `jayesh` + import)
+
+### Config checklist (local vs host)
+
+| Setting | Local (`wp-config.php`) | Host / InfinityFree |
+|---------|-------------------------|---------------------|
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` | Local’s MySQL values | Host panel MySQL values |
+| `WP_HOME` / `WP_SITEURL` | Usually auto | Set to real HTTPS domain |
+| Salts | Local generated | Fresh from WordPress.org salt API |
+| Theme | `dynamic-fashion-theme` | same |
+| Plugin | `vl-core` | same |
+| Permalinks | Post name | Post name |
+| Owner login | `jayesh` | `jayesh` (auto) |
+| Catalog | Import Catalog → live URLs | same after first admin visit |
+
+Do **not** commit `wp-config.php` or `fresh-start.php`.
 
 ## 4. Add a new product (simple)
 

@@ -295,6 +295,18 @@ function vl_simplify_product_screen() {
 		'side',
 		'high'
 	);
+
+	// Keep Product Categories visible on the right (in addition to main box checklist).
+	remove_meta_box( 'product_categorydiv', 'fashion_product', 'side' );
+	add_meta_box(
+		'product_categorydiv',
+		__( 'Product Categories', 'vl-core' ),
+		'post_categories_meta_box',
+		'fashion_product',
+		'side',
+		'high',
+		array( 'taxonomy' => 'product_category' )
+	);
 }
 add_action( 'add_meta_boxes_fashion_product', 'vl_simplify_product_screen', 20 );
 
@@ -311,12 +323,12 @@ function vl_product_edit_help() {
 	}
 	?>
 	<div class="vl-product-steps notice notice-info">
-		<p><strong><?php esc_html_e( 'Add product in 5 steps:', 'vl-core' ); ?></strong></p>
+		<p><strong><?php esc_html_e( 'Add product in 6 steps:', 'vl-core' ); ?></strong></p>
 		<ol>
 			<li><?php esc_html_e( 'Type product name at the top', 'vl-core' ); ?></li>
-			<li><?php esc_html_e( 'Click “Upload product photo” (or use Main Product Photo on the right)', 'vl-core' ); ?></li>
+			<li><?php esc_html_e( 'Click “Upload product photo”', 'vl-core' ); ?></li>
 			<li><?php esc_html_e( 'Enter Price (₹)', 'vl-core' ); ?></li>
-			<li><?php esc_html_e( 'Tick a Product Category on the right', 'vl-core' ); ?></li>
+			<li><?php esc_html_e( 'Tick Product Category (step 3 in the form — e.g. New Arrivals, Fashion)', 'vl-core' ); ?></li>
 			<li><?php esc_html_e( 'Click Publish / Update', 'vl-core' ); ?></li>
 		</ol>
 	</div>

@@ -76,12 +76,6 @@ while ( have_posts() ) :
 					?>
 				</div>
 
-				<?php
-				if ( function_exists( 'vl_get_product_price_html' ) ) {
-					echo vl_get_product_price_html( get_the_ID() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
-				?>
-
 				<div class="entry-content" style="margin:1.25rem 0;">
 					<?php the_content(); ?>
 				</div>
@@ -89,6 +83,8 @@ while ( have_posts() ) :
 				<?php
 				if ( function_exists( 'vl_render_cod_form' ) ) {
 					vl_render_cod_form( get_the_ID() );
+				} elseif ( function_exists( 'vl_get_product_price_html' ) ) {
+					echo vl_get_product_price_html( get_the_ID() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
 				?>
 

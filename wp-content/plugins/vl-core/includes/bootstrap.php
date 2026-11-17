@@ -121,57 +121,15 @@ function vl_cleanup_placeholder_ads() {
 }
 
 /**
- * Sources used for automatic first-run import (local files preferred).
+ * Sources used for automatic first-run import (live URLs).
  *
  * @return array
  */
 function vl_auto_import_sources() {
-	$local = array();
-	foreach ( vl_default_local_sources() as $source ) {
-		$path = ABSPATH . 'docs/imports/' . sanitize_file_name( $source['file'] );
-		if ( file_exists( $path ) ) {
-			$local[] = $source;
-		}
+	if ( function_exists( 'vl_default_remote_sources' ) ) {
+		return vl_default_remote_sources();
 	}
-	if ( $local ) {
-		return $local;
-	}
-
-	// Fallback remote JSON URLs when hosting without local import files.
-	return array(
-		array(
-			'id'     => 'url-next',
-			'label'  => 'next.vastralaxmi.com',
-			'type'   => 'url',
-			'url'    => 'https://next.vastralaxmi.com/products/products.json',
-			'file'   => '',
-			'origin' => 'https://next.vastralaxmi.com',
-		),
-		array(
-			'id'     => 'url-sale',
-			'label'  => 'sale.vastralaxmi.com',
-			'type'   => 'url',
-			'url'    => 'https://sale.vastralaxmi.com/products/products.json',
-			'file'   => '',
-			'origin' => 'https://sale.vastralaxmi.com',
-		),
-		array(
-			'id'     => 'url-trending',
-			'label'  => 'trending.vastralaxmi.com',
-			'type'   => 'url',
-			'url'    => 'https://trending.vastralaxmi.com/products/products.json',
-			'file'   => '',
-			'origin' => 'https://trending.vastralaxmi.com',
-		),
-		array(
-			'id'     => 'url-info',
-			'label'  => 'info.vastralaxmi.com',
-			'type'   => 'url',
-			'url'    => 'https://www.info.vastralaxmi.com/products/products.json',
-			'file'   => '',
-			'origin' => 'https://www.info.vastralaxmi.com',
-		),
-	);
+	return array();
 }
 
 /**
@@ -185,17 +143,20 @@ function vl_count_fashion_products() {
 }
 
 /**
- * Run one-time site setup: categories, pages, catalog import, menus.
+ * Run one-time site setup: owner, categories, pages, lean ads, menus.
+ * Does NOT import the product catalog — that is done manually one URL at a time
+ * from Site Settings → Import Catalog (keeps first boot light).
  *
- * @param bool $force Re-run import even if already done.
+ * @param bool $force Re-run structural setup even if already done.
  * @return array Result summary.
  */
 function vl_run_auto_setup( $force = false ) {
-	@set_time_limit( 0 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+	@set_time_limit( 120 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 
 	$result = array(
 		'user_id' => 0,
 		'import'  => null,
+		'guides'  => 0,
 		'menus'   => false,
 		'skipped' => false,
 	);
@@ -209,6 +170,10 @@ function vl_run_auto_setup( $force = false ) {
 	if ( function_exists( 'vl_ensure_product_ad_card' ) ) {
 		vl_ensure_product_ad_card();
 	}
+	// Always backfill default guides when Blogs / Guides is empty.
+	if ( function_exists( 'vl_ensure_default_guides' ) ) {
+		$result['guides'] = vl_ensure_default_guides( false );
+	}
 
 	if ( ! $force && get_option( 'vl_auto_setup_done' ) ) {
 		$result['skipped'] = true;
@@ -221,6 +186,9 @@ function vl_run_auto_setup( $force = false ) {
 	if ( function_exists( 'vl_ensure_core_pages' ) ) {
 		vl_ensure_core_pages();
 	}
+	if ( function_exists( 'vl_ensure_cart_pages' ) ) {
+		vl_ensure_cart_pages();
+	}
 
 	update_option( 'permalink_structure', '/%postname%/' );
 	if ( ! get_option( 'blogname' ) || 'DynamicBlog' === get_option( 'blogname' ) ) {
@@ -230,13 +198,11 @@ function vl_run_auto_setup( $force = false ) {
 		update_option( 'blogdescription', 'Premium fashion discovery' );
 	}
 
-	$need_import = $force || ! get_option( 'vl_catalog_imported' ) || vl_count_fashion_products() < 5;
-	if ( $need_import && function_exists( 'vl_import_from_sources' ) ) {
-		// Images can be slow on first host; still try — import updates existing by source key.
-		$stats             = vl_import_from_sources( vl_auto_import_sources(), true );
-		$result['import']  = $stats;
-		update_option( 'vl_last_import_stats', $stats );
-	}
+	// Catalog is NOT bulk-imported here — use Import Catalog (one URL at a time).
+	$result['import'] = array(
+		'skipped' => true,
+		'note'    => 'Use Import Catalog to sync each URL one by one.',
+	);
 
 	if ( function_exists( 'vl_sync_site_menus' ) ) {
 		vl_sync_site_menus();
@@ -294,7 +260,7 @@ function vl_bootstrap_admin_notice() {
 		return;
 	}
 	echo '<div class="notice notice-success is-dismissible"><p>';
-	echo esc_html__( 'Shop ready. Catalog import and menus are synced.', 'vl-core' );
+	echo esc_html__( 'Shop ready (pages, menus, ads, default guides). Next: Site Settings → Import Catalog — sync one URL at a time.', 'vl-core' );
 	echo '</p></div>';
 	update_option( 'vl_auto_setup_notice_done', 1 );
 }
