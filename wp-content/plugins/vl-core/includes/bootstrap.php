@@ -269,6 +269,72 @@ function vl_migrate_hide_unused_topbar() {
 add_action( 'admin_init', 'vl_migrate_hide_unused_topbar', 6 );
 
 /**
+ * Ensure WordPress rewrite .htaccess exists (InfinityFree product/page 404s without it).
+ *
+ * @return bool True when file has rewrite rules.
+ */
+function vl_ensure_wordpress_htaccess() {
+	if ( ! defined( 'ABSPATH' ) ) {
+		return false;
+	}
+
+	$file = ABSPATH . '.htaccess';
+	$need = true;
+	if ( file_exists( $file ) && is_readable( $file ) ) {
+		$existing = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		if ( false !== stripos( $existing, 'RewriteEngine' ) && false !== stripos( $existing, 'index.php' ) ) {
+			$need = false;
+		}
+	}
+
+	if ( $need ) {
+		$rules = "# BEGIN WordPress\n"
+			. "<IfModule mod_rewrite.c>\n"
+			. "RewriteEngine On\n"
+			. "RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]\n"
+			. "RewriteBase /\n"
+			. "RewriteRule ^index\\.php$ - [L]\n"
+			. "RewriteCond %{REQUEST_FILENAME} !-f\n"
+			. "RewriteCond %{REQUEST_FILENAME} !-d\n"
+			. "RewriteRule . /index.php [L]\n"
+			. "</IfModule>\n"
+			. "# END WordPress\n";
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		$written = @file_put_contents( $file, $rules );
+		if ( false === $written ) {
+			return false;
+		}
+	}
+
+	if ( ! get_option( 'permalink_structure' ) ) {
+		update_option( 'permalink_structure', '/%postname%/' );
+	}
+	flush_rewrite_rules( true );
+	update_option( 'vl_htaccess_ensured_v1', time() );
+	return true;
+}
+
+/**
+ * Run htaccess / permalink repair on admin load when needed.
+ */
+function vl_maybe_fix_permalinks_htaccess() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	$file = defined( 'ABSPATH' ) ? ABSPATH . '.htaccess' : '';
+	$missing = ! $file || ! file_exists( $file ) || ! get_option( 'vl_htaccess_ensured_v1' );
+	if ( ! $missing && $file && is_readable( $file ) ) {
+		$existing = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$missing  = ( false === stripos( $existing, 'RewriteEngine' ) );
+	}
+	if ( $missing ) {
+		vl_ensure_wordpress_htaccess();
+	}
+}
+add_action( 'admin_init', 'vl_maybe_fix_permalinks_htaccess', 7 );
+
+/**
  * One-time admin notice after auto setup (never shows password).
  */
 function vl_bootstrap_admin_notice() {

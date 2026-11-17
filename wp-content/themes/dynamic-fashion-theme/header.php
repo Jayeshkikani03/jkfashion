@@ -34,8 +34,6 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 </div>
 <?php endif; ?>
 
-<?php dft_render_ad( 'header_top' ); ?>
-
 <header class="site-header">
 	<div class="vl-container vl-header-bar">
 		<div class="site-branding">
@@ -103,6 +101,9 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 	?>
 </nav>
 
-<?php dft_render_ad( 'below_nav' ); ?>
+<?php
+dft_render_ad( 'header_top' );
+dft_render_ad( 'below_nav' );
+?>
 
 <main id="primary" class="site-main">

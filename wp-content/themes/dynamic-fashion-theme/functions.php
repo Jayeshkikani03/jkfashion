@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DFT_VERSION', '1.8.9' );
+define( 'DFT_VERSION', '1.9.0' );
 define( 'DFT_DIR', get_template_directory() );
 define( 'DFT_URI', get_template_directory_uri() );
 
