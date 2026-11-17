@@ -5,17 +5,17 @@ For real customer hosting (Hostinger + old domain), use [`HOSTING.md`](HOSTING.m
 
 **GitHub code:** https://github.com/Jayeshkikani03/jkfashion  
 **Local (dev):** http://localhost:10004  
-**Live demo URL:** https://jkfashion.freedev.app
+**Live demo URL:** https://newfashion.freedev.app
 
 ### Current InfinityFree MySQL (demo)
 
 ```
-DB_NAME     = if0_43454127_jkfashion
-DB_USER     = if0_43454127
-DB_PASSWORD = (panel password — keep private)
-DB_HOST     = sql102.infinityfree.com
-WP_HOME     = https://jkfashion.freedev.app
-WP_SITEURL  = https://jkfashion.freedev.app
+DB_NAME     = if0_43460965_newfashion
+DB_USER     = if0_43460965
+DB_PASSWORD = (panel / account password — keep private)
+DB_HOST     = sql210.infinityfree.com
+WP_HOME     = https://newfashion.freedev.app
+WP_SITEURL  = https://newfashion.freedev.app
 ```
 
 ---

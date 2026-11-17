@@ -95,4 +95,93 @@
     $("#vl_gallery_ids").val("");
     $("#vl-gallery-preview").empty();
   });
+
+  // Background catalog import — continues on any wp-admin page (no meta-refresh).
+  if (
+    typeof vlImportRunner !== "undefined" &&
+    vlImportRunner.running &&
+    vlImportRunner.ajaxUrl
+  ) {
+    var $bar = $(
+      '<div id="vl-import-bg-bar" style="position:fixed;z-index:100000;left:0;right:0;bottom:0;padding:10px 16px;background:#1d2327;color:#fff;font-size:13px;box-shadow:0 -2px 8px rgba(0,0,0,.2);"></div>'
+    );
+    $bar.text(vlImportRunner.i18n.bar);
+    $("body").append($bar);
+
+    var tickBusy = false;
+    var tickTimer = null;
+
+    function scheduleTick(delay) {
+      if (tickTimer) {
+        clearTimeout(tickTimer);
+      }
+      tickTimer = setTimeout(runTick, delay || 2500);
+    }
+
+    function runTick() {
+      if (tickBusy) {
+        scheduleTick(3000);
+        return;
+      }
+      tickBusy = true;
+      $.post(vlImportRunner.ajaxUrl, {
+        action: "vl_import_catalog_tick",
+        nonce: vlImportRunner.nonce,
+      })
+        .done(function (res) {
+          if (!res || !res.success || !res.data) {
+            scheduleTick(5000);
+            return;
+          }
+          var data = res.data;
+          if (data.status === "busy") {
+            scheduleTick(4000);
+            return;
+          }
+          if (data.status === "progress") {
+            $bar.text(
+              vlImportRunner.i18n.bar +
+                " (" +
+                (data.step || "?") +
+                "/" +
+                (data.of || "?") +
+                (data.last_source ? " · " + data.last_source : "") +
+                ")"
+            );
+            var $notice = $("#vl-import-progress-notice p");
+            if ($notice.length) {
+              $notice.text(
+                "Working in background… source " +
+                  data.step +
+                  " of " +
+                  data.of +
+                  (data.last_source ? " (" + data.last_source + ")" : "") +
+                  " — Images total so far: " +
+                  (data.images || 0) +
+                  ". You can open other wp-admin pages."
+              );
+            }
+            scheduleTick(1500);
+            return;
+          }
+          if (data.status === "imported") {
+            $bar.css("background", "#00a32a").text(vlImportRunner.i18n.done);
+            setTimeout(function () {
+              window.location.href =
+                vlImportRunner.pageUrl + "&vl_msg=imported";
+            }, 800);
+            return;
+          }
+          $bar.remove();
+        })
+        .fail(function () {
+          scheduleTick(8000);
+        })
+        .always(function () {
+          tickBusy = false;
+        });
+    }
+
+    scheduleTick(1200);
+  }
 })(jQuery);

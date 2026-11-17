@@ -14,22 +14,18 @@ dft_render_ad( 'below_hero' );
 $sections = array(
 	array(
 		'title' => __( 'New arrivals', 'dynamic-fashion' ),
-		'text'  => __( 'Fresh edits ready for your next look.', 'dynamic-fashion' ),
 		'args'  => array( 'meta_flag' => '_vl_is_new', 'posts_per_page' => 8 ),
 	),
 	array(
 		'title' => __( 'Trending now', 'dynamic-fashion' ),
-		'text'  => __( 'Styles gaining attention this season.', 'dynamic-fashion' ),
 		'args'  => array( 'meta_flag' => '_vl_is_trending', 'posts_per_page' => 8 ),
 	),
 	array(
 		'title' => __( 'Luxury collection', 'dynamic-fashion' ),
-		'text'  => __( 'Refined pieces for elevated occasions.', 'dynamic-fashion' ),
 		'args'  => array( 'meta_flag' => '_vl_is_luxury', 'posts_per_page' => 8 ),
 	),
 	array(
 		'title' => __( 'Sale and offers', 'dynamic-fashion' ),
-		'text'  => __( 'Selected looks with promotional pricing.', 'dynamic-fashion' ),
 		'args'  => array( 'meta_flag' => '_vl_is_on_sale', 'posts_per_page' => 8 ),
 	),
 );
@@ -52,10 +48,7 @@ foreach ( $sections as $section ) {
 	<section class="vl-section">
 		<div class="vl-container">
 			<div class="vl-section__head">
-				<div>
-					<h2><?php echo esc_html( $section['title'] ); ?></h2>
-					<p><?php echo esc_html( $section['text'] ); ?></p>
-				</div>
+				<h2><?php echo esc_html( $section['title'] ); ?></h2>
 			</div>
 			<div class="vl-product-grid">
 				<?php
@@ -85,10 +78,7 @@ if ( $rendered < 1 ) {
 		<section class="vl-section">
 			<div class="vl-container">
 				<div class="vl-section__head">
-					<div>
-						<h2><?php esc_html_e( 'Latest looks', 'dynamic-fashion' ); ?></h2>
-						<p><?php esc_html_e( 'Fresh products from the catalog.', 'dynamic-fashion' ); ?></p>
-					</div>
+					<h2><?php esc_html_e( 'Latest looks', 'dynamic-fashion' ); ?></h2>
 				</div>
 				<div class="vl-product-grid">
 					<?php
@@ -118,10 +108,7 @@ if ( $guides->have_posts() ) :
 	<section class="vl-section">
 		<div class="vl-container">
 			<div class="vl-section__head">
-				<div>
-					<h2><?php esc_html_e( 'Fashion guides', 'dynamic-fashion' ); ?></h2>
-					<p><?php esc_html_e( 'Ideas for festive capsules and wearable luxury.', 'dynamic-fashion' ); ?></p>
-				</div>
+				<h2><?php esc_html_e( 'Fashion guides', 'dynamic-fashion' ); ?></h2>
 				<a href="<?php echo esc_url( get_post_type_archive_link( 'fashion_article' ) ); ?>"><?php esc_html_e( 'View all', 'dynamic-fashion' ); ?></a>
 			</div>
 			<div class="vl-guide-grid">
@@ -152,20 +139,6 @@ if ( $guides->have_posts() ) :
 	<?php
 endif;
 ?>
-
-<section class="vl-section">
-	<div class="vl-container">
-		<div class="vl-newsletter">
-			<div>
-				<h2><?php echo esc_html( ! empty( $settings['newsletter_title'] ) ? $settings['newsletter_title'] : __( 'Style notes in your inbox', 'dynamic-fashion' ) ); ?></h2>
-				<p><?php echo esc_html( ! empty( $settings['newsletter_text'] ) ? $settings['newsletter_text'] : '' ); ?></p>
-			</div>
-			<div class="vl-newsletter__note">
-				<?php esc_html_e( 'Connect your preferred newsletter form later. This section is ready for integration.', 'dynamic-fashion' ); ?>
-			</div>
-		</div>
-	</div>
-</section>
 
 <?php
 get_footer();

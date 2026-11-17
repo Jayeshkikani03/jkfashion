@@ -755,12 +755,12 @@ function vl_render_import_page() {
 		<?php elseif ( 'deleted' === $status ) : ?>
 			<div class="notice notice-success"><p><?php esc_html_e( 'JSON source removed.', 'vl-core' ); ?></p></div>
 		<?php elseif ( 'progress' === $status ) : ?>
-			<div class="notice notice-info">
+			<div class="notice notice-info" id="vl-import-progress-notice">
 				<p>
 					<?php
 					printf(
 						/* translators: 1: current step, 2: total, 3: source label, 4: images this batch, 5: images total */
-						esc_html__( 'Working… source %1$s of %2$s (%3$s) — Images this batch: %4$s | Images total so far: %5$s. Keep this tab open.', 'vl-core' ),
+						esc_html__( 'Working in background… source %1$s of %2$s (%3$s) — Images this batch: %4$s | Images total so far: %5$s. You can open other wp-admin pages; leave the browser logged in.', 'vl-core' ),
 						esc_html( (string) max( 1, $step ) ),
 						esc_html( (string) max( 1, $of ) ),
 						esc_html( isset( $stats['last_source'] ) ? $stats['last_source'] : '' ),
@@ -771,8 +771,8 @@ function vl_render_import_page() {
 				</p>
 			</div>
 			<?php if ( is_array( $queue ) && ! empty( $queue['remaining'] ) ) : ?>
-				<meta http-equiv="refresh" content="1;url=<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vl_import_catalog_next' ), 'vl_import_catalog_next' ) ); ?>">
-				<p><a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vl_import_catalog_next' ), 'vl_import_catalog_next' ) ); ?>"><?php esc_html_e( 'Continue next URL now', 'vl-core' ); ?></a></p>
+				<p class="description"><?php esc_html_e( 'Job continues automatically. Avoid heavy front-page refresh on free hosting while sync runs (host may show a temporary 404 under load).', 'vl-core' ); ?></p>
+				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vl_import_catalog_next' ), 'vl_import_catalog_next' ) ); ?>"><?php esc_html_e( 'Force next step now', 'vl-core' ); ?></a></p>
 			<?php endif; ?>
 		<?php elseif ( 'imported' === $status ) : ?>
 			<div class="notice notice-success">
@@ -1079,6 +1079,7 @@ function vl_handle_import_catalog() {
 		'done'        => 0,
 	);
 	set_transient( 'vl_import_queue_' . get_current_user_id(), $queue, HOUR_IN_SECONDS );
+	vl_schedule_import_queue_cron( get_current_user_id() );
 
 	vl_process_import_queue_step();
 }
@@ -1097,16 +1098,85 @@ function vl_handle_import_catalog_next() {
 add_action( 'admin_post_vl_import_catalog_next', 'vl_handle_import_catalog_next' );
 
 /**
- * Import exactly one queued source (images in small batches), then redirect.
+ * Queue key for a user.
+ *
+ * @param int $user_id User ID.
+ * @return string
  */
-function vl_process_import_queue_step() {
+function vl_import_queue_key( $user_id = 0 ) {
+	$user_id = $user_id ? absint( $user_id ) : get_current_user_id();
+	return 'vl_import_queue_' . $user_id;
+}
+
+/**
+ * Schedule next background import tick (WP-Cron backup).
+ *
+ * @param int $user_id User ID.
+ */
+function vl_schedule_import_queue_cron( $user_id ) {
+	$user_id = absint( $user_id );
+	if ( ! $user_id ) {
+		return;
+	}
+	$hook = 'vl_import_catalog_cron';
+	if ( ! wp_next_scheduled( $hook, array( $user_id ) ) ) {
+		wp_schedule_single_event( time() + 3, $hook, array( $user_id ) );
+	}
+}
+
+/**
+ * Cron: process one step without requiring the Import Catalog tab.
+ *
+ * @param int $user_id User ID.
+ */
+function vl_handle_import_catalog_cron( $user_id ) {
+	$user_id = absint( $user_id );
+	$result  = vl_run_import_queue_step( $user_id );
+	if ( isset( $result['status'] ) && 'progress' === $result['status'] ) {
+		vl_schedule_import_queue_cron( $user_id );
+	}
+}
+add_action( 'vl_import_catalog_cron', 'vl_handle_import_catalog_cron' );
+
+/**
+ * AJAX tick for background import while logged into wp-admin.
+ */
+function vl_ajax_import_catalog_tick() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( array( 'message' => 'unauthorized' ), 403 );
+	}
+	check_ajax_referer( 'vl_import_catalog_tick', 'nonce' );
+
+	$result = vl_run_import_queue_step( get_current_user_id() );
+	if ( isset( $result['status'] ) && 'progress' === $result['status'] ) {
+		vl_schedule_import_queue_cron( get_current_user_id() );
+	}
+	wp_send_json_success( $result );
+}
+add_action( 'wp_ajax_vl_import_catalog_tick', 'vl_ajax_import_catalog_tick' );
+
+/**
+ * Run exactly one queued source/batch. Returns status array (no redirect).
+ *
+ * @param int $user_id User ID.
+ * @return array{status:string,step?:int,of?:int,last_source?:string,batch_images?:int,images?:int,message?:string}
+ */
+function vl_run_import_queue_step( $user_id = 0 ) {
 	@set_time_limit( 180 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 
-	$key   = 'vl_import_queue_' . get_current_user_id();
+	$user_id = $user_id ? absint( $user_id ) : get_current_user_id();
+	$key     = vl_import_queue_key( $user_id );
+	$lock    = 'vl_import_lock_' . $user_id;
+
+	if ( get_transient( $lock ) ) {
+		return array( 'status' => 'busy' );
+	}
+	set_transient( $lock, 1, 180 );
+
 	$queue = get_transient( $key );
 	if ( ! is_array( $queue ) || empty( $queue['remaining'] ) ) {
-		wp_safe_redirect( admin_url( 'admin.php?page=vl-import-catalog&vl_msg=none' ) );
-		exit;
+		delete_transient( $lock );
+		return array( 'status' => 'none' );
 	}
 
 	$source      = array_shift( $queue['remaining'] );
@@ -1122,28 +1192,97 @@ function vl_process_import_queue_step() {
 		$queue['done'] = (int) $queue['done'] + 1;
 	}
 
-	$notice_stats = $queue['totals'];
+	$notice_stats                 = $queue['totals'];
 	$notice_stats['batch_images'] = isset( $stats['images'] ) ? (int) $stats['images'] : 0;
 	$notice_stats['last_source']  = $queue['totals']['last_source'];
 	update_option( 'vl_last_import_stats', empty( $queue['remaining'] ) ? $queue['totals'] : $notice_stats );
 
 	if ( ! empty( $queue['remaining'] ) ) {
 		set_transient( $key, $queue, HOUR_IN_SECONDS );
-		$step = max( 1, (int) $queue['done'] );
-		$of   = max( 1, (int) $queue['total'] );
+		delete_transient( $lock );
+		return array(
+			'status'        => 'progress',
+			'step'          => max( 1, (int) $queue['done'] ),
+			'of'            => max( 1, (int) $queue['total'] ),
+			'last_source'   => isset( $queue['totals']['last_source'] ) ? $queue['totals']['last_source'] : '',
+			'batch_images'  => $notice_stats['batch_images'],
+			'images'        => isset( $queue['totals']['images'] ) ? (int) $queue['totals']['images'] : 0,
+			'remaining'     => count( $queue['remaining'] ),
+		);
+	}
+
+	delete_transient( $key );
+	delete_transient( $lock );
+	if ( function_exists( 'vl_sync_site_menus' ) ) {
+		delete_option( 'vl_menus_synced_v8' );
+		vl_sync_site_menus();
+	}
+
+	return array(
+		'status'  => 'imported',
+		'created' => isset( $queue['totals']['created'] ) ? (int) $queue['totals']['created'] : 0,
+		'images'  => isset( $queue['totals']['images'] ) ? (int) $queue['totals']['images'] : 0,
+	);
+}
+
+/**
+ * Import one queued step, then redirect (form / manual continue).
+ */
+function vl_process_import_queue_step() {
+	$result = vl_run_import_queue_step( get_current_user_id() );
+
+	if ( 'none' === $result['status'] ) {
+		wp_safe_redirect( admin_url( 'admin.php?page=vl-import-catalog&vl_msg=none' ) );
+		exit;
+	}
+
+	if ( 'busy' === $result['status'] ) {
+		wp_safe_redirect( admin_url( 'admin.php?page=vl-import-catalog&vl_msg=progress' ) );
+		exit;
+	}
+
+	if ( 'progress' === $result['status'] ) {
+		vl_schedule_import_queue_cron( get_current_user_id() );
 		wp_safe_redirect(
 			admin_url(
-				'admin.php?page=vl-import-catalog&vl_msg=progress&vl_step=' . $step . '&vl_of=' . $of
+				'admin.php?page=vl-import-catalog&vl_msg=progress&vl_step=' . absint( $result['step'] ) . '&vl_of=' . absint( $result['of'] )
 			)
 		);
 		exit;
 	}
 
-	delete_transient( $key );
-	if ( function_exists( 'vl_sync_site_menus' ) ) {
-		delete_option( 'vl_menus_synced_v8' );
-		vl_sync_site_menus();
-	}
 	wp_safe_redirect( admin_url( 'admin.php?page=vl-import-catalog&vl_msg=imported' ) );
 	exit;
 }
+
+/**
+ * Enqueue background import runner on all admin screens when a queue exists.
+ *
+ * @param string $hook Hook.
+ */
+function vl_enqueue_import_background_runner( $hook ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	$queue = get_transient( vl_import_queue_key() );
+	if ( ! is_array( $queue ) || empty( $queue['remaining'] ) ) {
+		return;
+	}
+
+	wp_enqueue_script( 'vl-admin', VL_CORE_URL . 'assets/admin.js', array( 'jquery' ), VL_CORE_VERSION, true );
+	wp_localize_script(
+		'vl-admin',
+		'vlImportRunner',
+		array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'vl_import_catalog_tick' ),
+			'pageUrl' => admin_url( 'admin.php?page=vl-import-catalog' ),
+			'running' => true,
+			'i18n'    => array(
+				'bar' => __( 'Catalog sync running in background…', 'vl-core' ),
+				'done'=> __( 'Catalog sync finished.', 'vl-core' ),
+			),
+		)
+	);
+}
+add_action( 'admin_enqueue_scripts', 'vl_enqueue_import_background_runner', 30 );

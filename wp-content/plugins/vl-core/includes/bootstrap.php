@@ -250,6 +250,25 @@ add_action( 'admin_init', 'vl_bootstrap_maybe_run', 5 );
 add_action( 'init', 'vl_bootstrap_maybe_run', 30 );
 
 /**
+ * Hide unused topbar marketing text on existing installs (one-time).
+ */
+function vl_migrate_hide_unused_topbar() {
+	if ( get_option( 'vl_ui_hide_topbar_v1' ) ) {
+		return;
+	}
+	$settings = get_option( 'vl_homepage_settings', array() );
+	if ( ! is_array( $settings ) ) {
+		$settings = array();
+	}
+	$settings['show_topbar']       = '0';
+	$settings['topbar_text']       = '';
+	$settings['topbar_link_label'] = '';
+	update_option( 'vl_homepage_settings', $settings );
+	update_option( 'vl_ui_hide_topbar_v1', 1 );
+}
+add_action( 'admin_init', 'vl_migrate_hide_unused_topbar', 6 );
+
+/**
  * One-time admin notice after auto setup (never shows password).
  */
 function vl_bootstrap_admin_notice() {

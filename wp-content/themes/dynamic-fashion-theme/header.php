@@ -6,10 +6,10 @@
  */
 
 $settings = function_exists( 'vl_get_homepage_settings' ) ? vl_get_homepage_settings() : array();
-$topbar   = ! empty( $settings['topbar_text'] ) ? $settings['topbar_text'] : __( 'Premium fashion discovery', 'dynamic-fashion' );
+$topbar   = isset( $settings['topbar_text'] ) ? trim( (string) $settings['topbar_text'] ) : '';
 $show_top = '1' === (string) ( isset( $settings['show_topbar'] ) ? $settings['show_topbar'] : '0' );
-$top_lbl  = ! empty( $settings['topbar_link_label'] ) ? $settings['topbar_link_label'] : __( 'Shop Sale', 'dynamic-fashion' );
-$top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url'] : home_url( '/collection/sale-and-offers/' );
+$top_lbl  = isset( $settings['topbar_link_label'] ) ? trim( (string) $settings['topbar_link_label'] ) : '';
+$top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url'] : '';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -23,7 +23,7 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 
 <a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'dynamic-fashion' ); ?></a>
 
-<?php if ( $show_top && '' !== trim( (string) $topbar ) ) : ?>
+<?php if ( $show_top && '' !== $topbar ) : ?>
 <div class="vl-topbar">
 	<div class="vl-container vl-topbar__inner">
 		<span><?php echo esc_html( $topbar ); ?></span>
@@ -44,9 +44,6 @@ $top_url  = ! empty( $settings['topbar_link_url'] ) ? $settings['topbar_link_url
 			<?php else : ?>
 				<a class="site-title-link" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 					<span class="site-title"><?php bloginfo( 'name' ); ?></span>
-					<?php if ( get_bloginfo( 'description' ) ) : ?>
-						<span class="site-description"><?php bloginfo( 'description' ); ?></span>
-					<?php endif; ?>
 				</a>
 			<?php endif; ?>
 		</div>
